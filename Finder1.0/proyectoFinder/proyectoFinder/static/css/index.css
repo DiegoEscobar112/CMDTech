@@ -1,0 +1,67 @@
+/* Estilos generales */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* Encabezado */
+h1 {
+    text-align: center;
+    color: #007bff;
+    margin-top: 20px;
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Mapa */
+#map {
+    height: 600px; /* Aumentamos la altura para hacerlo más largo */
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
+}
+
+/* Ajustamos el botón para que quede bien alineado */
+.button-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+}
+
+/* Estado del mapa */
+#status {
+    text-align: center;
+    color: #666;
+    margin-top: 10px;
+}
+/* Botón flotante para agregar publicaciones */
+.button-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+.floating-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 50px;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.floating-button:hover {
+    background-color: #0056b3;
+}
