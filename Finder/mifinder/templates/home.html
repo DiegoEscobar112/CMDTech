@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - OpenStreetMap</title>
+
+    <!-- Incluir el CSS de Leaflet para los estilos del mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    
+    <!-- Estilos personalizados -->
+    <style>
+        @font-face {
+            font-family: 'Bodoni FLF';
+            src: url('fonts/BodoniFLF.ttf') format('truetype');
+        }
+
+        /* Estilos para el menú desplegable */
+        .menu-container {
+            width: 250px;
+            background: linear-gradient(90deg, rgb(234, 232, 160) 0%, rgb(234, 232, 179) 50%, rgb(205, 202, 140) 100%); /* Mismo degradado que el header */
+            position: fixed;
+            top: 47px;
+            left: -250px; /* Inicialmente oculto a la izquierda */
+            height: calc(100% - 100px); /* Altura ajustada */
+            overflow: auto;
+            transition: left 0.3s ease; /* Animación al abrir y cerrar */
+            z-index: 1000;
+        }
+
+        .menu-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .menu-container ul li {
+            margin: 0;
+        }
+
+        .menu-container ul li a {
+            display: block;
+            color: #000;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        .menu-container ul li a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        /* Estilo para el botón del menú */
+        .menu-toggle {
+            position: fixed;
+            top: 60px;
+            left: 20px; /* Posición inicial a la izquierda */
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001; /* Siempre encima del menú */
+        }
+
+        /* Estilos para el mapa */
+        #map {
+            height: calc(100vh - 100px); /* Ajustar la altura del mapa restando el tamaño del header */
+            width: 100%;
+            transition: margin-left 0.3s ease; /* Animación cuando el menú se abre */
+            z-index: 1;
+            margin-top: 45px;
+        }
+
+        /* Estilos del header */
+        .site-header {
+            background: linear-gradient(90deg, rgb(219, 98, 228) 0%, rgb(220, 167, 224) 50%, rgb(163, 73, 170) 100%);
+            text-align: center;
+            padding: 10px 0;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1001;
+            font-family: 'Bodoni FLF', serif; /* Usar Bodoni FLF */
+            margin: 0;
+        }
+
+        .site-header .logo {
+            font-size: 1.5rem; /* Ajustar el tamaño de la fuente */
+            letter-spacing: 5px; /* Espaciado entre letras */
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #FEECB3;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Clase que se añadirá cuando el menú esté visible */
+        .menu-open .menu-container {
+            left: 0;
+        }
+
+        .menu-open .menu-toggle {
+            left: 270px; /* Mover el botón con el menú */
+        }
+
+        .menu-open #map {
+            margin-left: 250px; /* Empujar el mapa cuando el menú está abierto */
+        }
+
+        .site-footer {
+            background: linear-gradient(90deg, rgb(226, 224, 208) 0%, rgb(222, 222, 222) 50%, rgb(174, 173, 161) 100%);
+            color: rgb(87, 61, 112);
+            text-align: center;
+            padding: 20px 20px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            font-family: 'Bodoni FLF', serif;
+            z-index: 1001;
+        }
+
+        .site-footer p {
+            margin: 0;
+            font-size: 0.9rem; /* Ajustar el tamaño de la fuente */
+        }
+
+        .search-container {
+            position: fixed;
+            top: 120px; /* Ajustar la altura debajo del header */
+            right: 20px;
+            z-index: 1001;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+        }
+
+        .search-container input {
+            border: none;
+            padding: 5px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-container button {
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .search-container button:hover {
+            color: #555;
+        }
+
+        .recenter-button {
+            position: fixed;
+            bottom: 100px; /* Ajusta la posición en la parte inferior */
+            right: 20px;
+            z-index: 1001;
+            background-color: white;
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .recenter-button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .recenter-button:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <h1 class="logo">FINDER</h1>
+    </header>
+    <!-- Buscador flotante -->
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Buscar reportes...">
+        <button onclick="searchReport()">🔍</button>
+    </div>
+
+    <!-- Botón de reubicar posición -->
+    <div class="recenter-button" onclick="recenterMap()">
+        {% load static %}
+        <img src="{% static 'img/locacion.png' %}" alt="Reubicar" width="24" height="24">
+    </div>
+
+    <!-- Botón del menú -->
+    <div class="menu-toggle" onclick="toggleMenu()">Menú</div>
+
+    <!-- Menú lateral -->
+    <div class="menu-container">
+        <ul class="menu">
+            <li><a href="#">Reportar</a></li>
+            <li><a href="#">Tree Pruning</a></li>
+            <li><a href="#">Lost Pet</a></li>
+            <li><a href="#">Suspicious Activity</a></li>
+            <li><a href="#">Safety</a></li>
+            <li><a href="#">Car Theft</a></li>
+            <li><a href="{% url 'login' %}">Cerrar sesión</a></li>
+        </ul>
+    </div>
+    
+    <!-- Contenedor para el mapa -->
+    <div id="map"></div>
+
+    <!-- Incluir el JavaScript de Leaflet al final del body para cargar el mapa -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Script para inicializar el mapa de OpenStreetMap -->
+    <script>
+        // Inicializar el mapa en Santiago, Chile
+        var map = L.map('map', {
+            zoomControl: false // Desactivar los controles de zoom predeterminados
+        }).setView([-33.4489, -70.6693], 13);
+
+        // Añadir controles de zoom en la esquina superior derecha
+        L.control.zoom({
+            position: 'topright' // Mover los controles a la esquina superior derecha
+        }).addTo(map);
+
+        // Cargar el mapa de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Obtener la ubicación actual y centrar el mapa en la posición
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+
+                // Centrar el mapa en la ubicación actual
+                map.setView([lat, lng], 13);
+
+                // Añadir un marcador en la ubicación actual
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup('Estás aquí.')
+                    .openPopup();
+            }, function() {
+                alert("No se pudo obtener tu ubicación.");
+            });
+        } else {
+            alert("Geolocalización no soportada por tu navegador.");
+        }
+    </script>
+
+    <!-- JavaScript para el menú desplegable -->
+    <script>
+        function toggleMenu() {
+            document.body.classList.toggle('menu-open');
+        }
+    </script>
+    <script>
+        function searchReport() {
+            var searchQuery = document.getElementById('search').value;
+            alert('Buscando: ' + searchQuery);
+            // Aquí puedes agregar la lógica para filtrar reportes en el mapa
+        }
+    </script>
+    <script>
+        function recenterMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+    
+                    // Reubicar el mapa en la ubicación actual
+                    map.setView([lat, lng], 13);
+    
+                    // Añadir un marcador o popup si lo deseas
+                    L.marker([lat, lng]).addTo(map)
+                        .bindPopup('Estás aquí.')
+                        .openPopup();
+                }, function() {
+                    alert("No se pudo obtener tu ubicación.");
+                });
+            } else {
+                alert("Geolocalización no soportada por tu navegador.");
+            }
+        }
+    </script>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>© 2024 Finder - Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
