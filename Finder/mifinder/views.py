@@ -88,3 +88,14 @@ def actualizar_contrasenas():
                 WHERE id_usuario = %s
             """, [contrasena_hasheada, id_usuario])
 
+def report_pet(request):
+    if request.method == 'POST':
+        # Lógica para guardar el reporte de la mascota perdida
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        # Aquí puedes agregar lógica para guardar estos datos en la base de datos
+        # Redirige a la página principal después de enviar el reporte
+        return redirect('home')

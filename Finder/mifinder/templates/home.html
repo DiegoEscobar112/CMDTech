@@ -7,9 +7,10 @@
 
     <!-- Incluir el CSS de Leaflet para los estilos del mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    
+    {% load static %}
     <!-- Estilos personalizados -->
     <style>
+        
         @font-face {
             font-family: 'Bodoni FLF';
             src: url('fonts/BodoniFLF.ttf') format('truetype');
@@ -182,6 +183,93 @@
         .recenter-button:hover {
             background-color: #ddd;
         }
+         /* Estilos del modal con colores más vivos */
+         .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1002; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.6); 
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto; 
+            padding: 20px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .close {
+            color: #ff6f61;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover, .close:focus {
+            color: #d9534f;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .report-form label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #333;
+        }
+
+        .report-form textarea, .report-form input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .report-form button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .report-form button:hover {
+            background-color: #218838;
+        }
+
+        /* Estilos para el mapa */
+        #map {
+            height: calc(100vh - 100px); /* Ajustar la altura del mapa restando el tamaño del header */
+            width: 100%;
+            transition: margin-left 0.3s ease; /* Animación cuando el menú se abre */
+            z-index: 1;
+            margin-top: 45px;
+        }
+        /* Añadir cursor de movimiento para la parte superior de la modal */
+.modal-header {
+    cursor: move;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ccc;
+    border-radius: 10px 10px 0 0; /* Para que coincida con el diseño de la modal */
+}
     </style>
 </head>
 <body>
@@ -207,7 +295,7 @@
     <!-- Menú lateral -->
     <div class="menu-container">
         <ul class="menu">
-            <li><a href="#">Reportar</a></li>
+            <li><a href="#" id="reportButton">Reportar</a></li>
             <li><a href="#">Tree Pruning</a></li>
             <li><a href="#">Lost Pet</a></li>
             <li><a href="#">Suspicious Activity</a></li>
@@ -219,6 +307,24 @@
     
     <!-- Contenedor para el mapa -->
     <div id="map"></div>
+<!-- Modal para reportar mascota perdida -->
+<div id="reportModal" class="modal">
+    <div id="modalContent" class="modal-content">
+        <div id="modalHeader" class="modal-header">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Reportar Mascota Perdida</h2>
+        </div>
+        <form class="report-form">
+            <label for="animalDescription">Descripción del animal:</label>
+            <textarea id="animalDescription" name="animalDescription" rows="4" required></textarea>
+            <label for="reportDate">Fecha del reporte:</label>
+            <input type="text" id="reportDate" name="reportDate" readonly>
+            <label for="animalLocation">Ubicación:</label>
+            <input type="text" id="animalLocation" name="animalLocation" readonly>
+            <button type="submit">Enviar Reporte</button>
+        </form>
+    </div>
+</div>
 
     <!-- Incluir el JavaScript de Leaflet al final del body para cargar el mapa -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -239,7 +345,97 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+         // Icono personalizado para el marcador (puedes cambiarlo a otro ícono si lo deseas)
+         var petIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/616/616430.png', // URL del ícono
+            iconSize: [32, 32], // Tamaño del ícono
+            iconAnchor: [16, 32], // Punto de anclaje del ícono
+            popupAnchor: [0, -32] // Punto de anclaje del popup relativo al ícono
+        });
+       // Función para obtener la fecha actual en formato dd/mm/yyyy
+function getCurrentDate() {
+    var today = new Date();
+    var day = String(today.getDate()).padStart(2, '0');
+    var month = String(today.getMonth() + 1).padStart(2, '0'); // Los meses van de 0 a 11
+    var year = today.getFullYear();
 
+    return day + '/' + month + '/' + year;
+}
+
+// Función para abrir el modal con una ubicación específica
+function openModal() {
+    document.getElementById("reportModal").style.display = "block";
+    document.getElementById("animalLocation").value = "Lat: -33.4489, Lng: -70.6693"; // Coordenadas predeterminadas
+    document.getElementById("reportDate").value = getCurrentDate(); // Agregar la fecha actual al campo
+}
+        // Función para cerrar el modal
+        function closeModal() {
+            document.getElementById("reportModal").style.display = "none";
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+    var modal = document.getElementById("reportModal");
+    var header = document.getElementById("modalHeader");
+    var content = document.getElementById("modalContent");
+    var offsetX = 0, offsetY = 0, initialX = 0, initialY = 0;
+
+    if (header) { // Verificar que el encabezado de la modal exista
+        header.onmousedown = function(e) {
+            e.preventDefault();
+            
+            // Posiciones iniciales del mouse
+            initialX = e.clientX;
+            initialY = e.clientY;
+
+            // Cuando el mouse se mueve, ejecutar la función de mover la modal
+            document.onmousemove = dragModal;
+            
+            // Detener el movimiento cuando el mouse se suelta
+            document.onmouseup = function() {
+                document.onmousemove = null;
+                document.onmouseup = null;
+            };
+        };
+    }
+
+    function dragModal(e) {
+        e.preventDefault();
+        
+        // Calcular las posiciones nuevas del mouse
+        offsetX = initialX - e.clientX;
+        offsetY = initialY - e.clientY;
+        initialX = e.clientX;
+        initialY = e.clientY;
+
+        // Mover la ventana modal a la nueva posición
+        content.style.top = (content.offsetTop - offsetY) + "px";
+        content.style.left = (content.offsetLeft - offsetX) + "px";
+    }
+});
+         // Abrir el modal al hacer clic en "Reportar" del menú (si aún necesitas esta funcionalidad)
+        document.getElementById("reportButton").addEventListener('click', function(event) {
+            event.preventDefault(); // Prevenir comportamiento predeterminado del enlace
+            openModal(-33.4489, -70.6693);  // Coordenadas predeterminadas (puedes cambiarlas)
+        });
+         // Cerrar modal al hacer clic fuera del contenido
+         window.onclick = function(event) {
+            var modal = document.getElementById("reportModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        //   clic en el mapa y abrir el modal con las coordenadas
+        map.on('click', function(e) {
+    var lat = e.latlng.lat; // Definir latitud
+    var lng = e.latlng.lng; // Definir longitud
+    
+    // Llamar a la función openModal con las coordenadas del clic
+    openModal(lat, lng);
+
+    // Agregar el marcador con el icono personalizado en la ubicación del clic
+    L.marker([lat, lng], {icon: petIcon}).addTo(map)
+        .bindPopup('Reportar mascota perdida aquí.')
+        .openPopup();
+});
         // Obtener la ubicación actual y centrar el mapa en la posición
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
@@ -295,6 +491,43 @@
                 alert("Geolocalización no soportada por tu navegador.");
             }
         }
+        // Seleccionar la modal y el encabezado de la modal
+var modal = document.getElementById("reportModal");
+var header = document.getElementById("modalHeader");
+var content = document.getElementById("modalContent");
+var offsetX = 0, offsetY = 0, initialX = 0, initialY = 0;
+
+// Cuando el usuario hace clic en el encabezado de la modal, comienza el movimiento
+header.onmousedown = function(e) {
+    e.preventDefault();
+    
+    // Posiciones iniciales del mouse
+    initialX = e.clientX;
+    initialY = e.clientY;
+
+    // Cuando el mouse se mueve, ejecutar la función de mover la modal
+    document.onmousemove = dragModal;
+    
+    // Detener el movimiento cuando el mouse se suelta
+    document.onmouseup = function() {
+        document.onmousemove = null;
+        document.onmouseup = null;
+    };
+};
+
+function dragModal(e) {
+    e.preventDefault();
+    
+    // Calcular las posiciones nuevas del mouse
+    offsetX = initialX - e.clientX;
+    offsetY = initialY - e.clientY;
+    initialX = e.clientX;
+    initialY = e.clientY;
+
+    // Mover la ventana modal a la nueva posición
+    content.style.top = (content.offsetTop - offsetY) + "px";
+    content.style.left = (content.offsetLeft - offsetX) + "px";
+}
     </script>
     <!-- Footer -->
     <footer class="site-footer">
