@@ -310,7 +310,7 @@
 <!-- Modal para reportar mascota perdida -->
 <div id="reportModal" class="modal">
     <div id="modalContent" class="modal-content">
-        <div id="modalHeader" class="modal-header">
+        <div id="modalHeader">
             <span class="close" onclick="closeModal()">&times;</span>
             <h2>Reportar Mascota Perdida</h2>
         </div>
@@ -321,7 +321,7 @@
             <input type="text" id="reportDate" name="reportDate" readonly>
             <label for="animalLocation">Ubicación:</label>
             <input type="text" id="animalLocation" name="animalLocation" readonly>
-            <button type="submit">Enviar Reporte</button>
+            <button type="button" onclick="submitReport()">Enviar Reporte</button>
         </form>
     </div>
 </div>
@@ -331,204 +331,191 @@
 
     <!-- Script para inicializar el mapa de OpenStreetMap -->
     <script>
+        var currentMarker;
+        var markers = []; // Array para almacenar los marcadores creados
+        var markerId = 0;  // Contador para generar IDs únicos para cada marcador
+        var markerIdCounter = 0;  // Contador para generar IDs únicos para cada marcador
+        var reports = {};  // Almacena los reportes por marcador (clave: coordenadas, valor: reporte)
+
         // Inicializar el mapa en Santiago, Chile
         var map = L.map('map', {
             zoomControl: false // Desactivar los controles de zoom predeterminados
         }).setView([-33.4489, -70.6693], 13);
-
+    
         // Añadir controles de zoom en la esquina superior derecha
         L.control.zoom({
             position: 'topright' // Mover los controles a la esquina superior derecha
         }).addTo(map);
-
+    
         // Cargar el mapa de OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-         // Icono personalizado para el marcador (puedes cambiarlo a otro ícono si lo deseas)
-         var petIcon = L.icon({
+    
+        // Icono personalizado para el marcador
+        var petIcon = L.icon({
             iconUrl: 'https://cdn-icons-png.flaticon.com/512/616/616430.png', // URL del ícono
             iconSize: [32, 32], // Tamaño del ícono
             iconAnchor: [16, 32], // Punto de anclaje del ícono
             popupAnchor: [0, -32] // Punto de anclaje del popup relativo al ícono
         });
-       // Función para obtener la fecha actual en formato dd/mm/yyyy
-function getCurrentDate() {
-    var today = new Date();
-    var day = String(today.getDate()).padStart(2, '0');
-    var month = String(today.getMonth() + 1).padStart(2, '0'); // Los meses van de 0 a 11
-    var year = today.getFullYear();
-
-    return day + '/' + month + '/' + year;
-}
-
-// Función para abrir el modal con una ubicación específica
-function openModal() {
-    document.getElementById("reportModal").style.display = "block";
-    document.getElementById("animalLocation").value = "Lat: -33.4489, Lng: -70.6693"; // Coordenadas predeterminadas
-    document.getElementById("reportDate").value = getCurrentDate(); // Agregar la fecha actual al campo
-}
-        // Función para cerrar el modal
-        function closeModal() {
-            document.getElementById("reportModal").style.display = "none";
+    
+        // Función para obtener la fecha actual en formato dd/mm/yyyy
+        function getCurrentDate() {
+            var today = new Date();
+            var day = String(today.getDate()).padStart(2, '0');
+            var month = String(today.getMonth() + 1).padStart(2, '0'); // Los meses van de 0 a 11
+            var year = today.getFullYear();
+            return day + '/' + month + '/' + year;
         }
-        document.addEventListener('DOMContentLoaded', function () {
+        
+       // Abrir el modal
+function openModal(lat, lng, markerId = null) {
+    document.getElementById("reportModal").style.display = "block";
+
+    // Si ya existe un reporte con este markerId, cargar los datos
+    if (markerId && reports[markerId]) {
+        document.getElementById("animalDescription").value = reports[markerId].description;
+        document.getElementById("animalLocation").value = reports[markerId].location;
+        currentMarker = markers.find(marker => marker.options.markerId === markerId);  // Establecer el marcador actual
+    } else {
+        // Limpiar los campos si es un nuevo reporte
+        document.getElementById("animalDescription").value = "";
+        document.getElementById("animalLocation").value = "Lat: " + lat + ", Lng: " + lng;
+
+        // Crear un nuevo marcador si no existe uno anterior
+        markerIdCounter++;  // Generar un nuevo ID para el marcador
+        var newMarker = L.marker([lat, lng], { icon: petIcon, markerId: markerIdCounter }).addTo(map)
+            .on('click', function () {
+                // Asegurarse de que el modal se abra al hacer clic en el marcador existente
+                openModal(lat, lng, newMarker.options.markerId);
+            });
+
+        // Almacenar el nuevo marcador en el array de marcadores
+        markers.push(newMarker);
+        currentMarker = newMarker;  // Establecer el nuevo marcador como el marcador actual
+    }
+
+    document.getElementById("reportDate").value = getCurrentDate();
+}
+
+// Cerrar el modal
+function closeModal() {
+    document.getElementById("reportModal").style.display = "none";
+}
+    
+       // Enviar reporte
+function submitReport() {
+    var latLng = document.getElementById("animalLocation").value;
+    var description = document.getElementById("animalDescription").value;
+    
+    // Asegurarse de que currentMarker está definido
+    if (currentMarker && currentMarker.options) {
+        var markerId = currentMarker.options.markerId;  // Obtener el ID del marcador actual
+
+        // Guardar el reporte en el objeto 'reports' con el ID único del marcador
+        reports[markerId] = {
+            description: description,
+            location: latLng
+        };
+
+        closeModal(); // Cerrar la ventana modal
+    } else {
+        console.error('Error: No hay marcador actual definido.');
+    }
+}
+
+
+// Cerrar el modal al hacer clic fuera de él
+window.onclick = function (event) {
+    var modal = document.getElementById("reportModal");
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+ 
+       // Evento al hacer clic en el mapa
+map.on('click', function (e) {
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+    
+    // Incrementar el contador de IDs para cada nuevo marcador
+    markerIdCounter++;  
+
+    // Crear un nuevo marcador con un ID único
+    var newMarker = L.marker([lat, lng], { icon: petIcon, markerId: markerIdCounter }).addTo(map)
+        .on('click', function () {
+            // Asegurarse de que el modal se abra al hacer clic en el marcador existente
+            openModal(lat, lng, newMarker.options.markerId);
+        });
+
+    // Almacenar el nuevo marcador en el array de marcadores
+    markers.push(newMarker);
+
+    // Abrir el modal para el nuevo marcador, utilizando su `markerId` recién asignado
+    openModal(lat, lng, newMarker.options.markerId);
+});
+    
+        // Mover el modal al arrastrar
+document.addEventListener('DOMContentLoaded', function () {
     var modal = document.getElementById("reportModal");
     var header = document.getElementById("modalHeader");
     var content = document.getElementById("modalContent");
     var offsetX = 0, offsetY = 0, initialX = 0, initialY = 0;
 
-    if (header) { // Verificar que el encabezado de la modal exista
-        header.onmousedown = function(e) {
+    if (header) {
+        header.onmousedown = function (e) {
             e.preventDefault();
-            
-            // Posiciones iniciales del mouse
             initialX = e.clientX;
             initialY = e.clientY;
-
-            // Cuando el mouse se mueve, ejecutar la función de mover la modal
             document.onmousemove = dragModal;
-            
-            // Detener el movimiento cuando el mouse se suelta
-            document.onmouseup = function() {
+            document.onmouseup = function () {
                 document.onmousemove = null;
                 document.onmouseup = null;
             };
         };
     }
-
+    
     function dragModal(e) {
         e.preventDefault();
-        
-        // Calcular las posiciones nuevas del mouse
         offsetX = initialX - e.clientX;
         offsetY = initialY - e.clientY;
         initialX = e.clientX;
         initialY = e.clientY;
-
-        // Mover la ventana modal a la nueva posición
         content.style.top = (content.offsetTop - offsetY) + "px";
         content.style.left = (content.offsetLeft - offsetX) + "px";
     }
 });
-         // Abrir el modal al hacer clic en "Reportar" del menú (si aún necesitas esta funcionalidad)
-        document.getElementById("reportButton").addEventListener('click', function(event) {
-            event.preventDefault(); // Prevenir comportamiento predeterminado del enlace
-            openModal(-33.4489, -70.6693);  // Coordenadas predeterminadas (puedes cambiarlas)
+    
+        // Abrir el modal al hacer clic en "Reportar" del menú
+        document.getElementById("reportButton").addEventListener('click', function (event) {
+            event.preventDefault();
+            openModal(-33.4489, -70.6693);  // Coordenadas predeterminadas
         });
-         // Cerrar modal al hacer clic fuera del contenido
-         window.onclick = function(event) {
-            var modal = document.getElementById("reportModal");
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-        //   clic en el mapa y abrir el modal con las coordenadas
-        map.on('click', function(e) {
-    var lat = e.latlng.lat; // Definir latitud
-    var lng = e.latlng.lng; // Definir longitud
     
-    // Llamar a la función openModal con las coordenadas del clic
-    openModal(lat, lng);
-
-    // Agregar el marcador con el icono personalizado en la ubicación del clic
-    L.marker([lat, lng], {icon: petIcon}).addTo(map)
-        .bindPopup('Reportar mascota perdida aquí.')
-        .openPopup();
-});
-        // Obtener la ubicación actual y centrar el mapa en la posición
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                var lat = position.coords.latitude;
-                var lng = position.coords.longitude;
-
-                // Centrar el mapa en la ubicación actual
-                map.setView([lat, lng], 13);
-
-                // Añadir un marcador en la ubicación actual
-                L.marker([lat, lng]).addTo(map)
-                    .bindPopup('Estás aquí.')
-                    .openPopup();
-            }, function() {
-                alert("No se pudo obtener tu ubicación.");
-            });
-        } else {
-            alert("Geolocalización no soportada por tu navegador.");
-        }
-    </script>
-
-    <!-- JavaScript para el menú desplegable -->
-    <script>
-        function toggleMenu() {
-            document.body.classList.toggle('menu-open');
-        }
-    </script>
-    <script>
-        function searchReport() {
-            var searchQuery = document.getElementById('search').value;
-            alert('Buscando: ' + searchQuery);
-            // Aquí puedes agregar la lógica para filtrar reportes en el mapa
-        }
-    </script>
-    <script>
-        function recenterMap() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var lat = position.coords.latitude;
-                    var lng = position.coords.longitude;
+        // Evento al hacer clic en el mapa para agregar un nuevo marcador
+        map.on('click', function (e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+            openModal(lat, lng);
+        });
     
-                    // Reubicar el mapa en la ubicación actual
-                    map.setView([lat, lng], 13);
-    
-                    // Añadir un marcador o popup si lo deseas
-                    L.marker([lat, lng]).addTo(map)
-                        .bindPopup('Estás aquí.')
-                        .openPopup();
-                }, function() {
-                    alert("No se pudo obtener tu ubicación.");
-                });
-            } else {
-                alert("Geolocalización no soportada por tu navegador.");
-            }
-        }
-        // Seleccionar la modal y el encabezado de la modal
-var modal = document.getElementById("reportModal");
-var header = document.getElementById("modalHeader");
-var content = document.getElementById("modalContent");
-var offsetX = 0, offsetY = 0, initialX = 0, initialY = 0;
-
-// Cuando el usuario hace clic en el encabezado de la modal, comienza el movimiento
-header.onmousedown = function(e) {
-    e.preventDefault();
-    
-    // Posiciones iniciales del mouse
-    initialX = e.clientX;
-    initialY = e.clientY;
-
-    // Cuando el mouse se mueve, ejecutar la función de mover la modal
-    document.onmousemove = dragModal;
-    
-    // Detener el movimiento cuando el mouse se suelta
-    document.onmouseup = function() {
-        document.onmousemove = null;
-        document.onmouseup = null;
-    };
-};
-
-function dragModal(e) {
-    e.preventDefault();
-    
-    // Calcular las posiciones nuevas del mouse
-    offsetX = initialX - e.clientX;
-    offsetY = initialY - e.clientY;
-    initialX = e.clientX;
-    initialY = e.clientY;
-
-    // Mover la ventana modal a la nueva posición
-    content.style.top = (content.offsetTop - offsetY) + "px";
-    content.style.left = (content.offsetLeft - offsetX) + "px";
+       // Obtener la ubicación actual y centrar el mapa
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+        map.setView([lat, lng], 13);
+        L.marker([lat, lng]).addTo(map).bindPopup('Estás aquí.').openPopup();
+    }, function () {
+        alert("No se pudo obtener tu ubicación.");
+    });
+} else {
+    alert("Geolocalización no soportada por tu navegador.");
 }
     </script>
+    
     <!-- Footer -->
     <footer class="site-footer">
         <p>© 2024 Finder - Todos los derechos reservados.</p>
