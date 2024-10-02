@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_head %}
+    <!-- Incluir el CSS de Leaflet para los estilos del mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        /* Ajustar el tamaño del mapa y centrarlo */
+        #map {
+            height: 85vh; /* Ajuste de altura relativo a la ventana */
+            width: 95%; /* Ancho ajustado a 95% de la ventana */
+            margin: 20px auto; /* Centra el mapa horizontalmente y ajusta el margen superior */
+            border-radius: 15px; /* Bordes redondeados */
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+            position: relative; /* Asegura que se respete la posición del contenedor */
+        }
+
+        .search-container {
+            position: fixed;
+            top: 20px; /* Baja un poco para dejar más espacio en la parte superior */
+            right: 20px;
+            z-index: 1001;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+        }
+
+        .search-container input {
+            border: none;
+            padding: 5px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-container button {
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .search-container button:hover {
+            color: #555;
+        }
+
+        .recenter-button {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            z-index: 1001;
+            background-color: white;
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .recenter-button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .recenter-button:hover {
+            background-color: #ddd;
+        }
+
+        /* Estilo del título "FINDER" en el header */
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF5A5F;
+            letter-spacing: 2px;
+        }
+
+        .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Contenedor para el mapa -->
+    <div id="map"></div>
+
+    <!-- Botón de reubicar posición -->
+    <div class="recenter-button" onclick="recenterMap()">
+        <img src="{% static 'img/locacion.png' %}" alt="Reubicar">
+    </div>
+    <!-- Modal de búsqueda -->
+    <div id="searchModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeSearchModal()">&times;</span>
+            <h2>Buscar Reportes</h2>
+            <input type="text" id="searchInput" placeholder="Ingrese su búsqueda..." style="width:100%; padding:10px; margin-top:10px;">
+            <button type="button" onclick="searchReport()" style="margin-top:10px;">Buscar</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <!-- Incluir el JavaScript de Leaflet para cargar el mapa -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <script>
+        // Inicializar el mapa en Santiago, Chile
+        var map = L.map('map', {
+            zoomControl: false
+        }).setView([-33.4489, -70.6693], 13);
+
+        // Añadir controles de zoom en la esquina superior derecha
+        L.control.zoom({
+            position: 'topright'
+        }).addTo(map);
+
+        // Cargar el mapa de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Función para reubicar el mapa
+        function recenterMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    map.setView([lat, lng], 13);
+                    L.marker([lat, lng]).addTo(map).bindPopup('Estás aquí.').openPopup();
+                }, function() {
+                    alert("No se pudo obtener tu ubicación.");
+                });
+            } else {
+                alert("Geolocalización no soportada por tu navegador.");
+            }
+        }
+
+        // Activar geolocalización cuando se carga la página por primera vez
+        window.onload = function() {
+            recenterMap();
+        };
+
+        // Función para buscar reportes
+        function searchReport() {
+            var searchQuery = document.getElementById('search').value;
+            alert('Buscando: ' + searchQuery);
+        }
+    </script>
+    <script>
+        function openSearchModal() {
+            document.getElementById('searchModal').style.display = 'block';
+        }
+    
+        function closeSearchModal() {
+            document.getElementById('searchModal').style.display = 'none';
+        }
+    
+        function searchReport() {
+            var query = document.getElementById('searchInput').value;
+            alert('Buscando reportes para: ' + query);
+            // Aquí puedes agregar la lógica para filtrar o buscar reportes.
+        }
+    
+        // Cerrar el modal si el usuario hace clic fuera de él
+        window.onclick = function(event) {
+            var modal = document.getElementById('searchModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+    
+{% endblock %}

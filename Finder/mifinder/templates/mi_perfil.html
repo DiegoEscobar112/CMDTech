@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .perfil-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .perfil-info {
+            font-size: 18px;
+        }
+        .btn-registrar-mascota {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #28a745;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .btn-registrar-mascota:hover {
+            background-color: #218838;
+        }
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+        .mascota-card {
+            margin-bottom: 15px;
+        }
+
+        .profile-image-container {
+        position: relative;
+        display: inline-block;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+        }
+
+        .profile-image-container label {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #fff;
+            border-radius: 50%;
+            padding: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .icono-camara {
+            width: 20px;
+            height: 20px;
+        }
+
+        .profile-image-container label:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="perfil-container">
+        <h1>Mi Perfil</h1>
+
+        <!-- Mostrar la imagen de perfil -->
+        <form method="POST" enctype="multipart/form-data" action="{% url 'actualizar_imagen_perfil' %}">
+            {% csrf_token %}
+            <div class="profile-image-container">
+                <img src="{% if usuario.imagen_perfil %}{{ usuario.imagen_perfil }}{% else %}{% static 'img/imgperfil.jpg' %}{% endif %}" 
+                    alt="Imagen de perfil" class="profile-pic">
+                <label for="file-input">
+                    <img src="{% static 'img/mas.png' %}" class="icono-camara">
+                </label>
+                <input id="file-input" type="file" name="imagen_perfil" style="display: none;" onchange="this.form.submit()">
+            </div>
+        </form>
+
+        <div class="perfil-info">
+            <p>Nombre: {{ usuario.nombre }}</p>
+            <p>Correo: {{ usuario.correo }}</p>
+            <p>Teléfono: {{ usuario.telefono }}</p>
+            <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar perfil</a>
+        </div>
+
+        <h3 class="mt-5">Mascotas Registradas</h3>
+        <div class="container mt-4">
+            <div class="row">
+                {% for mascota in mascotas %}
+                    <div class="col-md-4">
+                        <div class="card mascota-card p-3">
+                            <p><strong>Nombre:</strong> {{ mascota.0 }}</p>
+                            <p><strong>Raza:</strong> {{ mascota.1 }}</p>
+                            <p><strong>Color:</strong> {{ mascota.2 }}</p>
+                            <p><strong>Edad:</strong> {{ mascota.3 }}</p>
+                            <p><strong>Descripción:</strong> {{ mascota.4 }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Botón para registrar nueva mascota -->
+        <a href="{% url 'registrar_mascota' %}" class="btn btn-success mt-4">Registrar Nueva Mascota</a>
+    </div>
+{% endblock %}
