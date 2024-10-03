@@ -1,0 +1,16 @@
+# Ignorar archivos compilados de Python
+*.pyc
+__pycache__/
+
+# Ignorar configuraciones de entorno
+*.env
+
+# Ignorar migraciones
+migrations/
+
+# Ignorar archivos generados por el sistema operativo
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos de caché de Django
+db.sqlite3
