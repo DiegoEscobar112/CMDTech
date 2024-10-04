@@ -8,46 +8,57 @@
         .perfil-container {
             text-align: center;
             margin-top: 50px;
+            animation: fadeIn 0.6s ease-in-out;
         }
+
+        /* Estilo para la información del perfil */
         .perfil-info {
             font-size: 18px;
+            margin-bottom: 30px;
         }
+
+        /* Botón para registrar mascota */
         .btn-registrar-mascota {
-            display: inline-block;
-            padding: 10px 20px;
+            padding: 12px 30px;
             font-size: 16px;
             color: white;
-            background-color: #28a745;
+            background-color: #a72828;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 30px;
             margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
+
         .btn-registrar-mascota:hover {
-            background-color: #218838;
+            background-color: #882121;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgb(255, 255, 255);
         }
+
+        /* Estilo para la imagen de perfil */
         .profile-pic {
             width: 150px;
             height: 150px;
             border-radius: 50%;
             object-fit: cover;
             margin-bottom: 20px;
-        }
-        .mascota-card {
-            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
 
+        .profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Contenedor de imagen de perfil */
         .profile-image-container {
-        position: relative;
-        display: inline-block;
+            position: relative;
+            display: inline-block;
         }
 
-        .profile-pic {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 2px solid #ccc;
-        }
-
+        /* Icono para cambiar la imagen */
         .profile-image-container label {
             position: absolute;
             bottom: 0;
@@ -59,15 +70,57 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .icono-camara {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
         }
 
         .profile-image-container label:hover {
             background-color: #f0f0f0;
+        }
+
+        /* Estilos para las tarjetas de mascotas */
+        .mascota-card {
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+        }
+
+        .mascota-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilo para el botón de editar perfil */
+        .btn-primary {
+            padding: 12px 30px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
         }
     </style>
 {% endblock %}
@@ -83,16 +136,17 @@
                 <img src="{% if usuario.imagen_perfil %}{{ usuario.imagen_perfil }}{% else %}{% static 'img/imgperfil.jpg' %}{% endif %}" 
                     alt="Imagen de perfil" class="profile-pic">
                 <label for="file-input">
-                    <img src="{% static 'img/mas.png' %}" class="icono-camara">
+                    <img src="{% static 'img/mas.png' %}" class="icono-camara" alt="Cambiar imagen">
                 </label>
                 <input id="file-input" type="file" name="imagen_perfil" style="display: none;" onchange="this.form.submit()">
             </div>
         </form>
 
+        <!-- Información del perfil -->
         <div class="perfil-info">
-            <p>Nombre: {{ usuario.nombre }}</p>
-            <p>Correo: {{ usuario.correo }}</p>
-            <p>Teléfono: {{ usuario.telefono }}</p>
+            <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
+            <p><strong>Correo:</strong> {{ usuario.correo }}</p>
+            <p><strong>Teléfono:</strong> {{ usuario.telefono }}</p>
             <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar perfil</a>
         </div>
 
@@ -101,7 +155,7 @@
             <div class="row">
                 {% for mascota in mascotas %}
                     <div class="col-md-4">
-                        <div class="card mascota-card p-3">
+                        <div class="card mascota-card">
                             <p><strong>Nombre:</strong> {{ mascota.0 }}</p>
                             <p><strong>Raza:</strong> {{ mascota.1 }}</p>
                             <p><strong>Color:</strong> {{ mascota.2 }}</p>
@@ -114,6 +168,6 @@
         </div>
 
         <!-- Botón para registrar nueva mascota -->
-        <a href="{% url 'registrar_mascota' %}" class="btn btn-success mt-4">Registrar Nueva Mascota</a>
+        <a href="{% url 'registrar_mascota' %}" class="btn-registrar-mascota">Registrar Nueva Mascota</a>
     </div>
 {% endblock %}

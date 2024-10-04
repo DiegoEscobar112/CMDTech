@@ -35,6 +35,11 @@ def login_view(request):
             messages.error(request, 'El correo no está registrado')
 
     return render(request, 'login.html')
+    # Elimina los mensajes irrelevantes antes de cargar la vista de login
+    storage = messages.get_messages(request)
+    storage.used = True  # Marcar todos los mensajes como consumidos
+
+    return render(request, 'login.html')
 
 
 def register_view(request):
@@ -150,7 +155,47 @@ def actualizar_imagen_perfil(request):
     
 # Vista para editar el perfil
 def editar_perfil(request):
-    return render(request, 'editar_perfil.html')
+    if 'user_id' not in request.session:
+        return redirect('login')
+
+    user_id = request.session['user_id']
+
+    # Si el método es POST, se están enviando datos desde el formulario
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        correo = request.POST.get('correo')
+        telefono = request.POST.get('telefono')
+
+        # Actualizar la base de datos con los nuevos datos del perfil
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE usuario 
+                SET nombre = %s, correo = %s, telefono = %s
+                WHERE id_usuario = %s
+            """, [nombre, correo, telefono, user_id])
+
+        messages.success(request, "Perfil actualizado con éxito.")
+        return redirect('mi_perfil')  # Redirigir de vuelta al perfil después de actualizar
+
+    # Si el método es GET, se cargan los datos actuales del usuario para mostrarlos en el formulario
+    else:
+        # Obtener los datos del usuario actual
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT nombre, correo, telefono FROM usuario WHERE id_usuario = %s", [user_id])
+            usuario = cursor.fetchone()
+
+        if not usuario:
+            return redirect('login')
+
+        # Pasar los datos del usuario al formulario
+        return render(request, 'editar_perfil.html', {
+            'usuario': {
+                'nombre': usuario[0],
+                'correo': usuario[1],
+                'telefono': usuario[2]
+            }
+        })
+
 
 
 def report_pet(request):

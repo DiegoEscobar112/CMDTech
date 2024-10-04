@@ -9,36 +9,36 @@
     <title>Finder</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Google Maps API -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtX6Jq3c2sHWd403wmPJF3EuYU1Ilhy6o"></script> <!-- Reemplaza TU_API_KEY por tu clave de Google Maps -->
 </head>
 <body>
     <div class="container">
         <div class="hero-section">
             <h1 class="framer-text">Finder</h1>
             <div class="map-container">
-                <div id="map"></div>
+                <div id="map" style="height: 450px; width: 100%;"></div> <!-- Ajustamos el tamaño del mapa -->
             </div>
             <h2 class="custom-heading">Encuentra a tu mascota de una forma muy fácil</h2>
         </div>
 
-            <div class="animal-box">
-                <img src="{% static 'img/dog.jpg' %}" alt="Perros">
-                <div class="animal-box-content">
-                    <h2>Perros</h2>
-                    <p>Podemos ayudar a encontrar a tus perritos y formar una buena comunidad!</p>
-                    <button class="read-more">Leer más</button>
-                </div>
+        <div class="animal-box">
+            <img src="{% static 'img/dog.jpg' %}" alt="Perros">
+            <div class="animal-box-content">
+                <h2>Perros</h2>
+                <p>Podemos ayudar a encontrar a tus perritos y formar una buena comunidad!</p>
+                <button class="read-more">Leer más</button>
             </div>
+        </div>
         
-            <div class="animal-box">
-                <img src="{% static 'img/cat.jpg' %}" alt="Gatos">
-                <div class="animal-box-content">
-                    <h2>Gatos</h2>
-                    <p>Los gatos son ágiles pero no imposibles de encontrar!</p>
-                    <button class="read-more">Leer más</button>
-                </div>
+        <div class="animal-box">
+            <img src="{% static 'img/cat.jpg' %}" alt="Gatos">
+            <div class="animal-box-content">
+                <h2>Gatos</h2>
+                <p>Los gatos son ágiles pero no imposibles de encontrar!</p>
+                <button class="read-more">Leer más</button>
             </div>
+        </div>
 
         <div class="faq-section">
             <h2>¿Qué es Finder?</h2>
@@ -62,29 +62,37 @@
         <p>© 2024 Finder - Todos los derechos reservados</p>
     </footer>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
+    <!-- Script para inicializar Google Maps -->
     <script>
-        // Obtener la ubicación del usuario
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                var lat = position.coords.latitude;
-                var lng = position.coords.longitude;
+        function initMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const latLng = { lat: lat, lng: lng };
 
-                var map = L.map('map').setView([lat, lng], 13);  // Usar la latitud y longitud del usuario
+                    // Inicializar el mapa centrado en la ubicación del usuario
+                    const map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 13,
+                        center: latLng,
+                    });
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
-
-                L.marker([lat, lng]).addTo(map)
-                    .bindPopup('Estás aquí.')
-                    .openPopup();
-            });
-        } else {
-            alert("Geolocalización no soportada por tu navegador");
+                    // Colocar un marcador en la ubicación del usuario
+                    new google.maps.Marker({
+                        position: latLng,
+                        map: map,
+                        title: 'Estás aquí!',
+                    });
+                }, function() {
+                    alert("No se pudo obtener tu ubicación.");
+                });
+            } else {
+                alert("Geolocalización no soportada por tu navegador.");
+            }
         }
+
+        // Cargar el mapa cuando la página esté lista
+        window.onload = initMap;
     </script>
 </body>
 </html>

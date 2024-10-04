@@ -4,8 +4,8 @@
 {% block title %}Home{% endblock %}
 
 {% block extra_head %}
-    <!-- Incluir el CSS de Leaflet para los estilos del mapa -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Cargar la API de Google Maps usando tu clave -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtX6Jq3c2sHWd403wmPJF3EuYU1Ilhy6o"></script>
     <style>
         /* Ajustar el tamaño del mapa y centrarlo */
         #map {
@@ -78,14 +78,14 @@
         }
 
         .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.6);
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
         }
         .modal-content {
             background-color: #fff;
@@ -132,33 +132,49 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    <!-- Incluir el JavaScript de Leaflet para cargar el mapa -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-
+    <!-- Script para inicializar el mapa de Google Maps -->
     <script>
-        // Inicializar el mapa en Santiago, Chile
-        var map = L.map('map', {
-            zoomControl: false
-        }).setView([-33.4489, -70.6693], 13);
+        let map; // Hacer la variable del mapa accesible globalmente
+        function initMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const latLng = { lat: lat, lng: lng };
 
-        // Añadir controles de zoom en la esquina superior derecha
-        L.control.zoom({
-            position: 'topright'
-        }).addTo(map);
+                    // Inicializa el mapa centrado en la ubicación del usuario
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 13,
+                        center: latLng,
+                    });
 
-        // Cargar el mapa de OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+                    // Añadir marcador en la ubicación del usuario
+                    new google.maps.Marker({
+                        position: latLng,
+                        map,
+                        title: 'Estás aquí!',
+                    });
+                }, function() {
+                    alert("No se pudo obtener tu ubicación.");
+                });
+            } else {
+                alert("Geolocalización no soportada por tu navegador.");
+            }
+        }
 
-        // Función para reubicar el mapa
+        // Función para reubicar el mapa usando geolocalización
         function recenterMap() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    var lat = position.coords.latitude;
-                    var lng = position.coords.longitude;
-                    map.setView([lat, lng], 13);
-                    L.marker([lat, lng]).addTo(map).bindPopup('Estás aquí.').openPopup();
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const latLng = { lat: lat, lng: lng };
+                    map.setCenter(latLng); // Reubicar el centro del mapa a la nueva ubicación
+                    new google.maps.Marker({
+                        position: latLng,
+                        map,
+                        title: 'Estás aquí!',
+                    });
                 }, function() {
                     alert("No se pudo obtener tu ubicación.");
                 });
@@ -169,15 +185,10 @@
 
         // Activar geolocalización cuando se carga la página por primera vez
         window.onload = function() {
-            recenterMap();
+            initMap();
         };
-
-        // Función para buscar reportes
-        function searchReport() {
-            var searchQuery = document.getElementById('search').value;
-            alert('Buscando: ' + searchQuery);
-        }
     </script>
+    
     <script>
         function openSearchModal() {
             document.getElementById('searchModal').style.display = 'block';
@@ -188,18 +199,17 @@
         }
     
         function searchReport() {
-            var query = document.getElementById('searchInput').value;
+            const query = document.getElementById('searchInput').value;
             alert('Buscando reportes para: ' + query);
             // Aquí puedes agregar la lógica para filtrar o buscar reportes.
         }
     
         // Cerrar el modal si el usuario hace clic fuera de él
         window.onclick = function(event) {
-            var modal = document.getElementById('searchModal');
+            const modal = document.getElementById('searchModal');
             if (event.target == modal) {
                 modal.style.display = "none";
             }
         }
     </script>
-    
 {% endblock %}
