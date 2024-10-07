@@ -6,6 +6,7 @@ from django.conf import settings
 
 
 urlpatterns = [
+    path('report-pet/', views.report_pet, name='report_pet'),
     path('admin/', admin.site.urls),
     path('', views.index_view, name ='index'),
     path('login/', views.login_view, name='login'),

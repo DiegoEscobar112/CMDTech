@@ -4,170 +4,196 @@
 {% block title %}Mi Perfil{% endblock %}
 
 {% block extra_head %}
-    <style>
-        .perfil-container {
-            text-align: center;
-            margin-top: 50px;
-            animation: fadeIn 0.6s ease-in-out;
-        }
+<style>
+    .perfil-container {
+        text-align: center;
+        margin-top: 50px;
+        animation: fadeIn 0.6s ease-in-out;
+    }
 
-        /* Estilo para la información del perfil */
-        .perfil-info {
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
+    .perfil-info {
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
 
-        /* Botón para registrar mascota */
-        .btn-registrar-mascota {
-            padding: 12px 30px;
-            font-size: 16px;
-            color: white;
-            background-color: #a72828;
-            text-decoration: none;
-            border-radius: 30px;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
+    .btn-registrar-mascota {
+        padding: 12px 30px;
+        font-size: 16px;
+        color: white;
+        background-color: #a72828;
+        text-decoration: none;
+        border-radius: 30px;
+        margin-top: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
 
-        .btn-registrar-mascota:hover {
-            background-color: #882121;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgb(255, 255, 255);
-        }
+    .btn-registrar-mascota:hover {
+        background-color: #882121;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgb(255, 255, 255);
+    }
 
-        /* Estilo para la imagen de perfil */
-        .profile-pic {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-        }
+    .profile-pic {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
 
-        .profile-pic:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-        }
+    .profile-pic:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    }
 
-        /* Contenedor de imagen de perfil */
-        .profile-image-container {
-            position: relative;
-            display: inline-block;
-        }
+    .profile-image-container {
+        position: relative;
+        display: inline-block;
+    }
 
-        /* Icono para cambiar la imagen */
-        .profile-image-container label {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background-color: #fff;
-            border-radius: 50%;
-            padding: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+    .profile-image-container label {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: #fff;
+        border-radius: 50%;
+        padding: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
 
-        .icono-camara {
-            width: 24px;
-            height: 24px;
-            transition: all 0.3s ease;
-        }
+    .icono-camara {
+        width: 24px;
+        height: 24px;
+        transition: all 0.3s ease;
+    }
 
-        .profile-image-container label:hover {
-            background-color: #f0f0f0;
-        }
+    .profile-image-container label:hover {
+        background-color: #f0f0f0;
+    }
 
-        /* Estilos para las tarjetas de mascotas */
-        .mascota-card {
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-            background-color: #ffffff;
-        }
+    /* Estilos para las tarjetas de mascotas y reportes */
+    .mascota-card {
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    max-height: none; /* Permitir que la tarjeta crezca según el contenido */
+    height: auto; /* Ajustar la altura automáticamente */
+    overflow: visible; /* Asegurar que el contenido no se corte */
+    word-wrap: break-word; /* Romper palabras largas para que se ajusten */
+}
 
-        .mascota-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 123, 255, 0.3);
-        }
+.mascota-card:hover,
+.reporte-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 123, 255, 0.3);
+}
+/* Alinear el contenedor de las tarjetas en el centro */
+.container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
 
-        /* Animaciones */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
         }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-        /* Estilo para el botón de editar perfil */
-        .btn-primary {
-            padding: 12px 30px;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-        }
+    .btn-primary {
+        padding: 12px 30px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+    }
 
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
-        }
-    </style>
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-    <div class="perfil-container">
-        <h1>Mi Perfil</h1>
+<div class="perfil-container">
+    <h1>Mi Perfil</h1>
 
-        <!-- Mostrar la imagen de perfil -->
-        <form method="POST" enctype="multipart/form-data" action="{% url 'actualizar_imagen_perfil' %}">
-            {% csrf_token %}
-            <div class="profile-image-container">
-                <img src="{% if usuario.imagen_perfil %}{{ usuario.imagen_perfil }}{% else %}{% static 'img/imgperfil.jpg' %}{% endif %}" 
-                    alt="Imagen de perfil" class="profile-pic">
-                <label for="file-input">
-                    <img src="{% static 'img/mas.png' %}" class="icono-camara" alt="Cambiar imagen">
-                </label>
-                <input id="file-input" type="file" name="imagen_perfil" style="display: none;" onchange="this.form.submit()">
-            </div>
-        </form>
-
-        <!-- Información del perfil -->
-        <div class="perfil-info">
-            <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
-            <p><strong>Correo:</strong> {{ usuario.correo }}</p>
-            <p><strong>Teléfono:</strong> {{ usuario.telefono }}</p>
-            <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar perfil</a>
+    <form method="POST" enctype="multipart/form-data" action="{% url 'actualizar_imagen_perfil' %}">
+        {% csrf_token %}
+        <div class="profile-image-container">
+            <img src="{% if usuario.imagen_perfil %}{{ usuario.imagen_perfil }}{% else %}{% static 'img/imgperfil.jpg' %}{% endif %}" 
+                alt="Imagen de perfil" class="profile-pic">
+            <label for="file-input">
+                <img src="{% static 'img/mas.png' %}" class="icono-camara" alt="Cambiar imagen">
+            </label>
+            <input id="file-input" type="file" name="imagen_perfil" style="display: none;" onchange="this.form.submit()">
         </div>
+    </form>
 
-        <h3 class="mt-5">Mascotas Registradas</h3>
-        <div class="container mt-4">
-            <div class="row">
-                {% for mascota in mascotas %}
-                    <div class="col-md-4">
-                        <div class="card mascota-card">
-                            <p><strong>Nombre:</strong> {{ mascota.0 }}</p>
-                            <p><strong>Raza:</strong> {{ mascota.1 }}</p>
-                            <p><strong>Color:</strong> {{ mascota.2 }}</p>
-                            <p><strong>Edad:</strong> {{ mascota.3 }}</p>
-                            <p><strong>Descripción:</strong> {{ mascota.4 }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Botón para registrar nueva mascota -->
-        <a href="{% url 'registrar_mascota' %}" class="btn-registrar-mascota">Registrar Nueva Mascota</a>
+    <div class="perfil-info">
+        <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
+        <p><strong>Correo:</strong> {{ usuario.correo }}</p>
+        <p><strong>Teléfono:</strong> {{ usuario.telefono }}</p>
+        <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar perfil</a>
     </div>
+
+ <!-- Secciones de Mascotas y Reportes en columnas -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Mascotas Registradas</h3>
+            <div class="mt-4">
+                <div class="row">
+                    {% for mascota in mascotas %}
+                        <div class="col-md-12">
+                            <div class="card mascota-card">
+                                <p><strong>Nombre:</strong> {{ mascota.0 }}</p>
+                                <p><strong>Raza:</strong> {{ mascota.1 }}</p>
+                                <p><strong>Color:</strong> {{ mascota.2 }}</p>
+                                <p><strong>Edad:</strong> {{ mascota.3 }}</p>
+                                <p><strong>Descripción:</strong> {{ mascota.4 }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h3>Reportes Realizados</h3> <!-- Eliminé el mt-4 para reducir la distancia -->
+            <div class="container mt-3"> <!-- Cambié a mt-3 para ajustar un poco más -->
+                <div class="row">
+                    {% for reporte in reportes %}
+                        <div class="col-md-12">
+                            <div class="card mascota-card">
+                                <p><strong>Título:</strong> {{ reporte.titulo }}</p>
+                                <p><strong>Descripción:</strong> {{ reporte.descripcion }}</p>
+                                <p><strong>Fecha:</strong> {{ reporte.fecha }}</p>
+                                <p><strong>Mascota:</strong> {{ reporte.nombre_mascota }}</p>
+                                <p><strong>Ubicación:</strong> Lat: {{ reporte.latitud }}, Lng: {{ reporte.longitud }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <a href="{% url 'registrar_mascota' %}" class="btn-registrar-mascota">Registrar Nueva Mascota</a>
+</div>
 {% endblock %}

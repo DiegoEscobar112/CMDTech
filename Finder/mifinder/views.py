@@ -5,7 +5,9 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-
+from django.views.decorators.csrf import csrf_exempt
+import datetime
+from django.http import JsonResponse
 
 def index_view(request):
     return render(request, 'index.html')
@@ -74,8 +76,20 @@ def register_view(request):
 
 def home_view(request):
     if 'user_id' not in request.session:
-        return redirect('login')  # Redirigir al login si no está autenticado
-    return render(request, 'home.html')  # Mostrar la página home
+        return redirect('login')
+
+    user_id = request.session['user_id']
+
+    # Consultar las mascotas registradas por el usuario
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT id_mascota, nombre FROM mascota WHERE id_usuario = %s", [user_id])
+        mascotas = cursor.fetchall()
+
+    # Convertir el resultado de la consulta a un diccionario para la plantilla
+    mascotas = [{'id_mascota': m[0], 'nombre': m[1]} for m in mascotas]
+
+    # Renderizar la vista de home con las mascotas del usuario
+    return render(request, 'home.html', {'mascotas': mascotas})
 
 def actualizar_contrasenas():
     # Seleccionar todos los usuarios con contraseñas en texto plano
@@ -94,7 +108,6 @@ def actualizar_contrasenas():
                 SET contrasena = %s
                 WHERE id_usuario = %s
             """, [contrasena_hasheada, id_usuario])
-
 # Vista para 'Mi perfil'
 def perfil(request):
     if 'user_id' not in request.session:
@@ -115,6 +128,29 @@ def perfil(request):
         cursor.execute("SELECT nombre, raza, color, edad, descripcion FROM mascota WHERE id_usuario = %s", [user_id])
         mascotas = cursor.fetchall()
 
+    # Consultar los reportes realizados por el usuario
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT p.titulo, p.descripcion, p.fecha_publicacion, m.nombre, g.latitud, g.longitud 
+            FROM publicacion p
+            JOIN mascota m ON p.id_mascota = m.id_mascota
+            JOIN geolocalizacion g ON p.id_geolocalizacion = g.id_geolocalizacion
+            WHERE p.id_usuario = %s
+        """, [user_id])
+        reportes = cursor.fetchall()
+
+    # Procesar los reportes en un formato adecuado para la plantilla
+    reportes = [
+        {
+            'titulo': r[0],
+            'descripcion': r[1],
+            'fecha': r[2],
+            'nombre_mascota': r[3],
+            'latitud': r[4],
+            'longitud': r[5]
+        } for r in reportes
+    ]
+
     # Procesar la ruta de la imagen de perfil
     imagen_perfil = usuario[3] if usuario[3] else '/path/to/default/image.jpg'  # Ruta a la imagen por defecto si no hay ninguna
 
@@ -125,7 +161,8 @@ def perfil(request):
             'telefono': usuario[2],
             'imagen_perfil': imagen_perfil  # Pasar la ruta de la imagen de perfil
         },
-        'mascotas': mascotas
+        'mascotas': mascotas,
+        'reportes': reportes
     })
 
 def actualizar_imagen_perfil(request):
@@ -238,3 +275,58 @@ def registrar_mascota(request):
     return render(request, 'registrar_mascota.html')
 
 
+@csrf_exempt
+def report_pet(request):
+    if request.method == 'POST':
+        description = request.POST.get('description')
+        report_date = request.POST.get('reportDate')
+        location = request.POST.get('location')
+        photo = request.FILES.get('photo')
+        id_mascota = request.POST.get('id_mascota')  # Obtener el ID de la mascota seleccionada
+
+        try:
+            # Procesar la latitud y longitud
+            lat, lng = location.replace('Lat: ', '').replace('Lng: ', '').split(', ')
+            
+            # Guardar la geolocalización y obtener el id
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO geolocalizacion (latitud, longitud) VALUES (%s, %s) RETURNING id_geolocalizacion",
+                    [lat, lng]
+                )
+                id_geolocalizacion = cursor.fetchone()[0]
+
+            # Guardar el archivo de imagen (si está presente)
+            if photo:
+                fs = FileSystemStorage()
+                filename = fs.save(photo.name, photo)
+                photo_url = fs.url(filename)
+            else:
+                photo_url = None  # O una URL por defecto si no se sube imagen
+
+            # Guardar el reporte de la mascota
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO publicacion (
+                        id_usuario, titulo, descripcion, fecha_publicacion, 
+                        id_mascota, id_geolocalizacion, imagen, estado
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, [
+                    request.session.get('user_id'),
+                    'Reporte de mascota perdida',
+                    description,
+                    report_date,
+                    id_mascota,
+                    id_geolocalizacion,
+                    photo_url,  # Guardar la URL de la imagen
+                    'activa'
+                ])
+
+            return JsonResponse({'success': True})
+
+        except Exception as e:
+            # Imprimir el error para debug
+            print(f'Error al guardar el reporte: {e}')
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)

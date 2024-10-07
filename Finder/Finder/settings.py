@@ -79,9 +79,9 @@ WSGI_APPLICATION = 'Finder.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'finder',          
+        'NAME': 'finderdb',          
         'USER': 'postgres',         
-        'PASSWORD': 'diego1234',   
+        'PASSWORD': 'nicknine12',   
         'HOST': 'localhost',       
         'PORT': '5432',             
     }

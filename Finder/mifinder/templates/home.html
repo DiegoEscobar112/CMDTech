@@ -6,6 +6,7 @@
 {% block extra_head %}
     <!-- Cargar la API de Google Maps usando tu clave -->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlQZG1mCOGe8Nk5acj9b2isfhLWHnZDUY"></script>
+    
     <style>
         /* Ajustar el tamaño del mapa y centrarlo */
         #map {
@@ -109,6 +110,107 @@
             text-decoration: none;
             cursor: pointer;
         }
+        
+.report-modal {
+    display: none; /* No se muestra hasta que se activa */
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto; /* Permite desplazamiento vertical si el contenido es mayor que la pantalla */
+    padding: 20px; /* Añade un poco de espacio para que el contenido no toque los bordes */
+}
+
+.report-modal .modal-content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%; /* Ajusta el ancho al 90% de la pantalla */
+    max-width: 500px; /* Máximo ancho del modal */
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+    position: relative;
+    max-height: 80vh; /* Limita la altura máxima del contenido */
+    overflow-y: auto; /* Agrega desplazamiento interno si el contenido es mayor */
+}
+
+.report-modal h2 {
+    font-size: 1.5rem; /* Ajusta el tamaño de la fuente para que ocupe menos espacio */
+    margin-bottom: 15px;
+    color: #444;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.report-modal .form-group {
+    margin-bottom: 15px; /* Reduce el espacio entre los campos */
+    text-align: left;
+}
+
+.report-modal .form-group label {
+    display: block;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px; /* Reduce el margen inferior */
+}
+
+.report-modal .form-control {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+    min-height: 2.5rem; /* Ajustar la altura mínima del select para que se vea bien */
+}
+
+.report-modal select.form-control {
+    appearance: none; /* Elimina el estilo predeterminado del navegador */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 8px; /* Espacio interno para que el texto se vea bien */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" class="bi bi-caret-down" viewBox="0 0 16 16"> <path d="M3.204 5h9.592L8 10.481 3.204 5z"/> </svg>'); /* Flecha personalizada */
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem; /* Espacio para la flecha */
+}
+
+.report-modal .submit-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px; /* Ajusta el tamaño del botón */
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: background-color 0.2s ease-in-out;
+    margin-top: 10px; /* Espacio entre el botón y el campo anterior */
+}
+
+.report-modal .submit-button:hover {
+    background-color: #0056b3;
+}
+
+.report-modal .close {
+    font-size: 1.2rem; /* Ajusta el tamaño de la "x" para que ocupe menos espacio */
+    color: #aaa;
+    cursor: pointer;
+    position: absolute;
+    top: 10px; /* Ajusta la posición para que esté más arriba */
+    right: 10px; /* Ajusta la posición para que esté más a la derecha */
+}
+
+.report-modal .close:hover {
+    color: #333;
+}
     </style>
 {% endblock %}
 
@@ -119,7 +221,45 @@
     <!-- Botón de reubicar posición -->
     <div class="recenter-button" onclick="recenterMap()">
         <img src="{% static 'img/locacion.png' %}" alt="Reubicar">
+    <!-- Modal para reportar mascota -->
+<div id="reportModal" class="report-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Reportar Mascota Perdida</h2>
+            <span class="close" onclick="closeReportModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form class="report-form">
+                <div class="form-group">
+                    <label for="id_mascota">Selecciona tu mascota:</label>
+                    <select id="id_mascota" name="id_mascota" class="form-control">
+                        <!-- Las opciones de mascotas deben ser generadas dinámicamente -->
+                        {% for mascota in mascotas %}
+                            <option value="{{ mascota.id_mascota }}">{{ mascota.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción del animal:</label>
+                    <textarea id="description" name="description" rows="4" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="photo">Foto de la mascota:</label>
+                    <input type="file" id="photo" name="photo" accept="image/*" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="reportDate">Fecha del reporte:</label>
+                    <input type="text" id="reportDate" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="location">Ubicación:</label>
+                    <input type="text" id="location" class="form-control" readonly>
+                </div>
+                <button type="button" class="submit-button" onclick="submitReport()">Enviar Reporte</button>
+            </form>
+        </div>
     </div>
+</div>
     <!-- Modal de búsqueda -->
     <div id="searchModal" class="modal" style="display:none;">
         <div class="modal-content">
@@ -154,6 +294,10 @@
                         map,
                         title: 'Estás aquí!',
                     });
+                    // Evento para abrir el modal al hacer clic en el mapa
+                    map.addListener('click', function(e) {
+                        openReportModal(e.latLng.lat(), e.latLng.lng());
+                    });
                 }, function() {
                     alert("No se pudo obtener tu ubicación.");
                 });
@@ -182,6 +326,70 @@
                 alert("Geolocalización no soportada por tu navegador.");
             }
         }
+          // Función para abrir el modal de reporte
+function openReportModal(lat, lng) {
+    // Asignar la fecha actual al campo correspondiente
+    document.getElementById('reportDate').value = new Date().toLocaleDateString();
+    // Asignar la ubicación al campo correspondiente
+    document.getElementById('location').value = `Lat: ${lat}, Lng: ${lng}`;
+    // Mostrar el modal
+    document.getElementById('reportModal').style.display = 'flex';
+}
+
+// Función para cerrar el modal de reporte
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+}
+// Función para obtener el token CSRF desde las cookies
+function getCSRFToken() {
+    let cookieValue = null;
+    const name = 'csrftoken';
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // ¿Este cookie comienza con el nombre que queremos?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+// Iniciar el mapa solo cuando la página esté completamente cargada
+window.onload = function() {
+    initMap();
+};
+        function submitReport() {
+    const formData = new FormData();
+    formData.append('description', document.getElementById('description').value);
+    formData.append('reportDate', document.getElementById('reportDate').value);
+    formData.append('location', document.getElementById('location').value);
+    formData.append('photo', document.getElementById('photo').files[0]);
+    formData.append('id_mascota', document.getElementById('id_mascota').value); // Incluye el id_mascota
+
+    fetch('/report-pet/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCSRFToken() // Asumiendo que tienes una función para obtener el token CSRF
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Reporte enviado con éxito.');
+            closeReportModal();
+        } else {
+            alert('Error al enviar el reporte. Inténtalo de nuevo.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al enviar el reporte. Inténtalo de nuevo.');
+    });
+}
 
         // Activar geolocalización cuando se carga la página por primera vez
         window.onload = function() {
