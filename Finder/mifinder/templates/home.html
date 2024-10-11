@@ -5,17 +5,18 @@
 
 {% block extra_head %}
     <!-- Cargar la API de Google Maps usando tu clave -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlQZG1mCOGe8Nk5acj9b2isfhLWHnZDUY"></script>
+    
     
     <style>
         /* Ajustar el tamaño del mapa y centrarlo */
         #map {
-            height: 85vh; /* Ajuste de altura relativo a la ventana */
-            width: 95%; /* Ancho ajustado a 95% de la ventana */
-            margin: 20px auto; /* Centra el mapa horizontalmente y ajusta el margen superior */
-            border-radius: 15px; /* Bordes redondeados */
-            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
-            position: relative; /* Asegura que se respete la posición del contenedor */
+            height: 90vh; /* Ocupa el 90% de la altura de la ventana */
+            width: 90vw; /* Ocupa el 90% del ancho de la ventana */
+            border-radius: 20px; /* Bordes redondeados */
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3); /* Sombra alrededor del mapa */
+            position: absolute; /* Mantiene el mapa posicionado sobre la pantalla */
+            top: 7.5%; /* Centrado vertical */
+            left: 5%; /* Centrado horizontal */
         }
 
         .search-container {
@@ -111,106 +112,106 @@
             cursor: pointer;
         }
         
-.report-modal {
-    display: none; /* No se muestra hasta que se activa */
-    position: fixed;
-    z-index: 1050;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    justify-content: center;
-    align-items: center;
-    overflow-y: auto; /* Permite desplazamiento vertical si el contenido es mayor que la pantalla */
-    padding: 20px; /* Añade un poco de espacio para que el contenido no toque los bordes */
-}
+        .report-modal {
+            display: none; /* No se muestra hasta que se activa */
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto; /* Permite desplazamiento vertical si el contenido es mayor que la pantalla */
+            padding: 20px; /* Añade un poco de espacio para que el contenido no toque los bordes */
+        }
 
-.report-modal .modal-content {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 15px;
-    width: 90%; /* Ajusta el ancho al 90% de la pantalla */
-    max-width: 500px; /* Máximo ancho del modal */
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-in-out;
-    position: relative;
-    max-height: 80vh; /* Limita la altura máxima del contenido */
-    overflow-y: auto; /* Agrega desplazamiento interno si el contenido es mayor */
-}
+        .report-modal .modal-content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%; /* Ajusta el ancho al 90% de la pantalla */
+            max-width: 500px; /* Máximo ancho del modal */
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-in-out;
+            position: relative;
+            max-height: 80vh; /* Limita la altura máxima del contenido */
+            overflow-y: auto; /* Agrega desplazamiento interno si el contenido es mayor */
+        }
 
-.report-modal h2 {
-    font-size: 1.5rem; /* Ajusta el tamaño de la fuente para que ocupe menos espacio */
-    margin-bottom: 15px;
-    color: #444;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
-}
+        .report-modal h2 {
+            font-size: 1.5rem; /* Ajusta el tamaño de la fuente para que ocupe menos espacio */
+            margin-bottom: 15px;
+            color: #444;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
 
-.report-modal .form-group {
-    margin-bottom: 15px; /* Reduce el espacio entre los campos */
-    text-align: left;
-}
+        .report-modal .form-group {
+            margin-bottom: 15px; /* Reduce el espacio entre los campos */
+            text-align: left;
+        }
 
-.report-modal .form-group label {
-    display: block;
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 5px; /* Reduce el margen inferior */
-}
+        .report-modal .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px; /* Reduce el margen inferior */
+        }
 
-.report-modal .form-control {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-    box-sizing: border-box;
-    min-height: 2.5rem; /* Ajustar la altura mínima del select para que se vea bien */
-}
+        .report-modal .form-control {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+            min-height: 2.5rem; /* Ajustar la altura mínima del select para que se vea bien */
+        }
 
-.report-modal select.form-control {
-    appearance: none; /* Elimina el estilo predeterminado del navegador */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding: 8px; /* Espacio interno para que el texto se vea bien */
-    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" class="bi bi-caret-down" viewBox="0 0 16 16"> <path d="M3.204 5h9.592L8 10.481 3.204 5z"/> </svg>'); /* Flecha personalizada */
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    padding-right: 2rem; /* Espacio para la flecha */
-}
+        .report-modal select.form-control {
+            appearance: none; /* Elimina el estilo predeterminado del navegador */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding: 8px; /* Espacio interno para que el texto se vea bien */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" class="bi bi-caret-down" viewBox="0 0 16 16"> <path d="M3.204 5h9.592L8 10.481 3.204 5z"/> </svg>'); /* Flecha personalizada */
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            padding-right: 2rem; /* Espacio para la flecha */
+        }
 
-.report-modal .submit-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 15px; /* Ajusta el tamaño del botón */
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 1rem;
-    transition: background-color 0.2s ease-in-out;
-    margin-top: 10px; /* Espacio entre el botón y el campo anterior */
-}
+        .report-modal .submit-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px; /* Ajusta el tamaño del botón */
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 10px; /* Espacio entre el botón y el campo anterior */
+        }
 
-.report-modal .submit-button:hover {
-    background-color: #0056b3;
-}
+        .report-modal .submit-button:hover {
+            background-color: #0056b3;
+        }
 
-.report-modal .close {
-    font-size: 1.2rem; /* Ajusta el tamaño de la "x" para que ocupe menos espacio */
-    color: #aaa;
-    cursor: pointer;
-    position: absolute;
-    top: 10px; /* Ajusta la posición para que esté más arriba */
-    right: 10px; /* Ajusta la posición para que esté más a la derecha */
-}
+        .report-modal .close {
+            font-size: 1.2rem; /* Ajusta el tamaño de la "x" para que ocupe menos espacio */
+            color: #aaa;
+            cursor: pointer;
+            position: absolute;
+            top: 10px; /* Ajusta la posición para que esté más arriba */
+            right: 10px; /* Ajusta la posición para que esté más a la derecha */
+        }
 
-.report-modal .close:hover {
-    color: #333;
-}
+        .report-modal .close:hover {
+            color: #333;
+        }
     </style>
 {% endblock %}
 
