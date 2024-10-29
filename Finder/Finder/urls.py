@@ -17,4 +17,5 @@ urlpatterns = [
     path('report', views.report_pet, name='report_pet'),
     path('registrar-mascota/', views.registrar_mascota, name='registrar_mascota'),
     path('actualizar-imagen-perfil/', views.actualizar_imagen_perfil, name='actualizar_imagen_perfil'),
+    path('obtener_reportes/', views.obtener_reportes, name='obtener_reportes'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
