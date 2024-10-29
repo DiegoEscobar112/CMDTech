@@ -5,7 +5,7 @@
 
 {% block extra_head %}
     <!-- Cargar la API de Google Maps usando tu clave -->
-    
+    <script async defer src=""></script>
     
     <style>
         /* Ajustar el tamaño del mapa y centrarlo */
@@ -212,6 +212,33 @@
         .report-modal .close:hover {
             color: #333;
         }
+        .comments-section {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .comments-section h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #comments-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        #new-comment {
+            width: 100%;
+            margin-top: 10px;
+        }
+
     </style>
 {% endblock %}
 
@@ -223,44 +250,44 @@
     <div class="recenter-button" onclick="recenterMap()">
         <img src="{% static 'img/locacion.png' %}" alt="Reubicar">
     <!-- Modal para reportar mascota -->
-<div id="reportModal" class="report-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Reportar Mascota Perdida</h2>
-            <span class="close" onclick="closeReportModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <form class="report-form">
-                <div class="form-group">
-                    <label for="id_mascota">Selecciona tu mascota:</label>
-                    <select id="id_mascota" name="id_mascota" class="form-control">
-                        <!-- Las opciones de mascotas deben ser generadas dinámicamente -->
-                        {% for mascota in mascotas %}
-                            <option value="{{ mascota.id_mascota }}">{{ mascota.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="description">Descripción del animal:</label>
-                    <textarea id="description" name="description" rows="4" class="form-control"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="photo">Foto de la mascota:</label>
-                    <input type="file" id="photo" name="photo" accept="image/*" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="reportDate">Fecha del reporte:</label>
-                    <input type="text" id="reportDate" class="form-control" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="location">Ubicación:</label>
-                    <input type="text" id="location" class="form-control" readonly>
-                </div>
-                <button type="button" class="submit-button" onclick="submitReport()">Enviar Reporte</button>
-            </form>
+    <div id="reportModal" class="report-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Reportar Mascota Perdida</h2>
+                <span class="close" onclick="closeReportModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form class="report-form">
+                    <div class="form-group">
+                        <label for="id_mascota">Selecciona tu mascota:</label>
+                        <select id="id_mascota" name="id_mascota" class="form-control">
+                            {% for mascota in mascotas %}
+                                <option value="{{ mascota.id_mascota }}">{{ mascota.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Descripción del animal:</label>
+                        <textarea id="description" name="description" rows="4" class="form-control"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="photo">Foto de la mascota:</label>
+                        <input type="file" id="photo" name="photo" accept="image/*" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportDate">Fecha del reporte:</label>
+                        <input type="text" id="reportDate" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Ubicación:</label>
+                        <input type="text" id="location" class="form-control" readonly>
+                    </div>
+                    <button type="button" class="submit-button" onclick="submitReport()">Enviar Reporte</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+
     <!-- Modal de búsqueda -->
     <div id="searchModal" class="modal" style="display:none;">
         <div class="modal-content">
@@ -275,30 +302,36 @@
 {% block extra_scripts %}
     <!-- Script para inicializar el mapa de Google Maps -->
     <script>
-        let map; // Hacer la variable del mapa accesible globalmente
+        let map; // Variable global para el mapa
+    
+        // Inicializa el mapa, establece la ubicación del usuario y agrega la funcionalidad de clic
         function initMap() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
                     const latLng = { lat: lat, lng: lng };
-
+    
                     // Inicializa el mapa centrado en la ubicación del usuario
                     map = new google.maps.Map(document.getElementById('map'), {
                         zoom: 13,
                         center: latLng,
                     });
-
+    
                     // Añadir marcador en la ubicación del usuario
                     new google.maps.Marker({
                         position: latLng,
                         map,
                         title: 'Estás aquí!',
                     });
+    
                     // Evento para abrir el modal al hacer clic en el mapa
                     map.addListener('click', function(e) {
                         openReportModal(e.latLng.lat(), e.latLng.lng());
                     });
+    
+                    // Cargar reportes existentes en el mapa
+                    cargarReportesEnMapa();
                 }, function() {
                     alert("No se pudo obtener tu ubicación.");
                 });
@@ -307,118 +340,134 @@
             }
         }
 
-        // Función para reubicar el mapa usando geolocalización
-        function recenterMap() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const latLng = { lat: lat, lng: lng };
-                    map.setCenter(latLng); // Reubicar el centro del mapa a la nueva ubicación
-                    new google.maps.Marker({
-                        position: latLng,
-                        map,
-                        title: 'Estás aquí!',
+        // Función para cargar los reportes en el mapa
+        function cargarReportesEnMapa() {
+            fetch('/obtener_reportes/')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(reporte => {
+                        const marker = new google.maps.Marker({
+                            position: { lat: reporte.latitud, lng: reporte.longitud },
+                            map: map,
+                            title: reporte.nombre_mascota,
+                            icon: {
+                                url: "{% static 'img/pata.png' %}", // Ruta al ícono personalizado
+                                scaledSize: new google.maps.Size(40, 40), // Tamaño del ícono
+                            }
+                        });
+
+                        // Contenido del InfoWindow con los comentarios
+                        const contentString = `
+                            <div style="max-width: 500px; font-family: Arial, sans-serif; color: #333;">
+                                <div style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ddd;">
+                                    <div style="flex-shrink: 0; margin-right: 15px;">
+                                        <img src="${reporte.imagen}" alt="Imagen de la mascota" style="width:100px; height:100px; object-fit: cover; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.2);"/>
+                                    </div>
+                                    <div style="flex-grow: 1;">
+                                        <h3 style="margin: 0; font-size: 20px; color: #FF5A5F;">Reporte de mascota perdida</h3>
+                                        <p style="margin: 5px 0; font-size: 16px; color: #555;"><strong>Mascota:</strong> ${reporte.nombre_mascota}</p>
+                                        <p style="margin: 5px 0; font-size: 16px; color: #555;"><strong>Reportado por:</strong> ${reporte.nombre_usuario}</p>
+                                        <p style="margin: 5px 0; font-size: 16px; color: #555;"><strong>Teléfono:</strong> ${reporte.telefono_usuario}</p>
+                                        <p style="margin: 5px 0; font-size: 15px; color: #666; line-height: 1.5;">${reporte.descripcion}</p>
+                                        <p style="margin: 5px 0; font-size: 14px; color: #777;"><strong>Fecha:</strong> ${reporte.fecha}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sección de comentarios -->
+                                <div style="padding: 15px;">
+                                    <h4 style="font-size: 18px; color: #FF5A5F; margin-top: 0;">Comentarios</h4>
+                                    <div id="comments-${reporte.id}" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border-radius: 5px; border: 1px solid #ddd;">
+                                        <!-- Comentarios cargados dinámicamente aquí -->
+                                    </div>
+                                    <textarea id="new-comment-${reporte.id}" rows="3" placeholder="Escribe un comentario..." style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; resize: none; font-size: 15px;"></textarea>
+                                    <label for="comment-photo-${reporte.id}" style="display: block; margin-bottom: 8px; font-size: 15px; color: #777;">Adjuntar foto (opcional):</label>
+                                    <input type="file" id="comment-photo-${reporte.id}" accept="image/*" style="width: 100%; padding: 8px; font-size: 15px; border-radius: 5px; border: 1px solid #ddd;">
+                                    <button onclick="addComment(${reporte.id})" style="width: 100%; margin-top: 10px; padding: 12px; background-color: #FF5A5F; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 18px;">Añadir Comentario</button>
+                                </div>
+                            </div>
+                        `;
+
+                        const infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+                        marker.addListener('click', function() {
+                            infowindow.open(map, marker);
+                            loadComments(reporte.id); // Cargar los comentarios para este reporte
+                        });
                     });
-                }, function() {
-                    alert("No se pudo obtener tu ubicación.");
-                });
-            } else {
-                alert("Geolocalización no soportada por tu navegador.");
-            }
+                })
+                .catch(error => console.error('Error al cargar reportes:', error));
         }
-          // Función para abrir el modal de reporte
-function openReportModal(lat, lng) {
-    // Asignar la fecha actual al campo correspondiente
-    document.getElementById('reportDate').value = new Date().toLocaleDateString();
-    // Asignar la ubicación al campo correspondiente
-    document.getElementById('location').value = `Lat: ${lat}, Lng: ${lng}`;
-    // Mostrar el modal
-    document.getElementById('reportModal').style.display = 'flex';
-}
-
-// Función para cerrar el modal de reporte
-function closeReportModal() {
-    document.getElementById('reportModal').style.display = 'none';
-}
-// Función para obtener el token CSRF desde las cookies
-function getCSRFToken() {
-    let cookieValue = null;
-    const name = 'csrftoken';
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // ¿Este cookie comienza con el nombre que queremos?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+    
+        // Función para abrir el modal de reporte
+        function openReportModal(lat, lng) {
+            document.getElementById('reportDate').value = new Date().toLocaleDateString();
+            document.getElementById('location').value = `Lat: ${lat}, Lng: ${lng}`;
+            document.getElementById('reportModal').style.display = 'flex';
         }
-    }
-    return cookieValue;
-}
-// Iniciar el mapa solo cuando la página esté completamente cargada
-window.onload = function() {
-    initMap();
-};
-        function submitReport() {
-    const formData = new FormData();
-    formData.append('description', document.getElementById('description').value);
-    formData.append('reportDate', document.getElementById('reportDate').value);
-    formData.append('location', document.getElementById('location').value);
-    formData.append('photo', document.getElementById('photo').files[0]);
-    formData.append('id_mascota', document.getElementById('id_mascota').value); // Incluye el id_mascota
-
-    fetch('/report-pet/', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': getCSRFToken() // Asumiendo que tienes una función para obtener el token CSRF
+    
+        // Función para cerrar el modal de reporte
+        function closeReportModal() {
+            document.getElementById('reportModal').style.display = 'none';
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Reporte enviado con éxito.');
-            closeReportModal();
-        } else {
-            alert('Error al enviar el reporte. Inténtalo de nuevo.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al enviar el reporte. Inténtalo de nuevo.');
-    });
-}
-
-        // Activar geolocalización cuando se carga la página por primera vez
+    
+        // Cargar el mapa una vez que la página esté completamente cargada
         window.onload = function() {
             initMap();
         };
-    </script>
-    
-    <script>
-        function openSearchModal() {
-            document.getElementById('searchModal').style.display = 'block';
-        }
-    
-        function closeSearchModal() {
-            document.getElementById('searchModal').style.display = 'none';
-        }
-    
-        function searchReport() {
-            const query = document.getElementById('searchInput').value;
-            alert('Buscando reportes para: ' + query);
-            // Aquí puedes agregar la lógica para filtrar o buscar reportes.
-        }
-    
-        // Cerrar el modal si el usuario hace clic fuera de él
-        window.onclick = function(event) {
-            const modal = document.getElementById('searchModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
+
+        // Función para obtener el token CSRF desde las cookies
+        function getCSRFToken() {
+            let cookieValue = null;
+            const name = 'csrftoken';
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // ¿Este cookie comienza con el nombre que queremos?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
+        }
+
+        // Iniciar el mapa solo cuando la página esté completamente cargada
+        window.onload = function() {
+            initMap();
+        };
+        function submitReport() {
+            const formData = new FormData();
+            formData.append('description', document.getElementById('description').value);
+            formData.append('reportDate', document.getElementById('reportDate').value);
+            formData.append('location', document.getElementById('location').value);
+            formData.append('photo', document.getElementById('photo').files[0]);
+            formData.append('id_mascota', document.getElementById('id_mascota').value); // Incluye el id_mascota
+
+            fetch('/report-pet/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCSRFToken() // Asumiendo que tienes una función para obtener el token CSRF
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Reporte enviado con éxito.');
+                    closeReportModal();
+                } else {
+                    alert('Error al enviar el reporte. Inténtalo de nuevo.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al enviar el reporte. Inténtalo de nuevo.');
+            });
         }
     </script>
+    
 {% endblock %}

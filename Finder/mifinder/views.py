@@ -330,3 +330,34 @@ def report_pet(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+
+def obtener_reportes(request):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT p.titulo, p.descripcion, p.fecha_publicacion, m.nombre, g.latitud, g.longitud, p.imagen, u.nombre, u.telefono
+            FROM publicacion p
+            JOIN mascota m ON p.id_mascota = m.id_mascota
+            JOIN geolocalizacion g ON p.id_geolocalizacion = g.id_geolocalizacion
+            JOIN usuario u ON p.id_usuario = u.id_usuario
+            WHERE p.estado = 'activa'
+        """)
+        reportes = cursor.fetchall()
+    
+    # Formatear los datos para enviarlos en formato JSON
+    reportes_json = [
+        {
+            'titulo': r[0],
+            'descripcion': r[1],
+            'fecha': r[2].strftime("%Y-%m-%d %H:%M:%S"),
+            'nombre_mascota': r[3],
+            'latitud': float(r[4]),
+            'longitud': float(r[5]),
+            'imagen': r[6],
+            'nombre_usuario': r[7],
+            'telefono_usuario': r[8]
+        } for r in reportes
+    ]
+    
+    return JsonResponse(reportes_json, safe=False)
+
