@@ -36,6 +36,18 @@
             height: 25px;
             margin-right: 10px;
         }
+        /* Estilo del contador de notificaciones */
+        .badge-danger {
+            background-color: red;
+            color: white;
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 0.8em;
+            padding: 4px 6px;
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -68,6 +80,16 @@
                     <a class="nav-link" href="#" onclick="openSearchModal()">
                         <img src="{% static 'img/buscar.png' %}" alt="Buscar" style="width: 25px;">
                         Buscar
+                    </a>
+                </li>
+                <!-- Ícono de notificaciones con contador -->
+                <li class="nav-item position-relative">
+                    <a href="{% url 'ver_notificaciones' %}" class="nav-link">
+                        <img src="{% static 'img/campana.png' %}" alt="Notificaciones" style="width: 25px;">
+                        {% if user_notifications_count > 0 %}
+                            <span class="badge badge-danger">{{ user_notifications_count }}</span>
+                        {% endif %}
+                        Notificaciones
                     </a>
                 </li>
             </ul>

@@ -5,7 +5,7 @@
 
 {% block extra_head %}
     <!-- Cargar la API de Google Maps usando tu clave -->
-    <script async defer src=""></script>
+    
     
     <style>
         /* Ajustar el tamaño del mapa y centrarlo */
@@ -249,6 +249,7 @@
     <!-- Botón de reubicar posición -->
     <div class="recenter-button" onclick="recenterMap()">
         <img src="{% static 'img/locacion.png' %}" alt="Reubicar">
+    </div>
     <!-- Modal para reportar mascota -->
     <div id="reportModal" class="report-modal">
         <div class="modal-content">
@@ -341,11 +342,14 @@
         }
 
         // Función para cargar los reportes en el mapa
+        let markers = {};
         function cargarReportesEnMapa() {
             fetch('/obtener_reportes/')
                 .then(response => response.json())
                 .then(data => {
                     data.forEach(reporte => {
+                        console.log("Reporte ID:", reporte.id); // Verifica el ID en la consola
+
                         const marker = new google.maps.Marker({
                             position: { lat: reporte.latitud, lng: reporte.longitud },
                             map: map,
@@ -355,13 +359,16 @@
                                 scaledSize: new google.maps.Size(40, 40), // Tamaño del ícono
                             }
                         });
+                        // Añadir el ID del reporte como atributo data-reporte-id
+                        markers[reporte.id] = marker;
 
                         // Contenido del InfoWindow con los comentarios
                         const contentString = `
-                            <div style="max-width: 500px; font-family: Arial, sans-serif; color: #333;">
+                            <div style="max-width: 700px; font-family: Arial, sans-serif; color: #333;">
+                                <!-- Detalles del reporte -->
                                 <div style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ddd;">
                                     <div style="flex-shrink: 0; margin-right: 15px;">
-                                        <img src="${reporte.imagen}" alt="Imagen de la mascota" style="width:100px; height:100px; object-fit: cover; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.2);"/>
+                                        <img src="${reporte.imagen}" alt="Imagen de la mascota" style="width: 260px;; height:200px; object-fit: cover; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.2);"/>
                                     </div>
                                     <div style="flex-grow: 1;">
                                         <h3 style="margin: 0; font-size: 20px; color: #FF5A5F;">Reporte de mascota perdida</h3>
@@ -379,10 +386,14 @@
                                     <div id="comments-${reporte.id}" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border-radius: 5px; border: 1px solid #ddd;">
                                         <!-- Comentarios cargados dinámicamente aquí -->
                                     </div>
-                                    <textarea id="new-comment-${reporte.id}" rows="3" placeholder="Escribe un comentario..." style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; resize: none; font-size: 15px;"></textarea>
-                                    <label for="comment-photo-${reporte.id}" style="display: block; margin-bottom: 8px; font-size: 15px; color: #777;">Adjuntar foto (opcional):</label>
-                                    <input type="file" id="comment-photo-${reporte.id}" accept="image/*" style="width: 100%; padding: 8px; font-size: 15px; border-radius: 5px; border: 1px solid #ddd;">
-                                    <button onclick="addComment(${reporte.id})" style="width: 100%; margin-top: 10px; padding: 12px; background-color: #FF5A5F; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 18px;">Añadir Comentario</button>
+                                    
+                                    <!-- Formulario de nuevo comentario -->
+                                    <form id="comentarioForm-${reporte.id}" enctype="multipart/form-data">
+                                        <textarea name="contenido" id="new-comment-${reporte.id}" rows="3" placeholder="Escribe un comentario..." style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; resize: none; font-size: 15px;"></textarea>
+                                        <label for="comment-photo-${reporte.id}" style="display: block; margin-bottom: 8px; font-size: 15px; color: #777;">Adjuntar foto (opcional):</label>
+                                        <input type="file" name="imagen" id="comment-photo-${reporte.id}" accept="image/*" style="width: 100%; padding: 8px; font-size: 15px; border-radius: 5px; border: 1px solid #ddd;">
+                                        <button type="button" onclick="addComment(${reporte.id})" style="width: 100%; margin-top: 10px; padding: 12px; background-color: #FF5A5F; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 18px;">Añadir Comentario</button>
+                                    </form>
                                 </div>
                             </div>
                         `;
@@ -435,10 +446,6 @@
             return cookieValue;
         }
 
-        // Iniciar el mapa solo cuando la página esté completamente cargada
-        window.onload = function() {
-            initMap();
-        };
         function submitReport() {
             const formData = new FormData();
             formData.append('description', document.getElementById('description').value);
@@ -468,6 +475,94 @@
                 alert('Error al enviar el reporte. Inténtalo de nuevo.');
             });
         }
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Verifica si esta cookie comienza con el nombre deseado
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function addComment(reportId) {
+            const form = document.getElementById(`comentarioForm-${reportId}`);
+            const formData = new FormData(form);
+            formData.append('id_publicacion', reportId);  // Asegúrate de que el ID se esté enviando correctamente
+
+            fetch('/crear-comentario/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')  // Utiliza el token CSRF correctamente
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.mensaje);  // Notificación de éxito
+                form.reset();  // Limpiar el formulario después de enviar
+                loadComments(reportId);  // Recargar los comentarios
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un problema al enviar el comentario');
+            });
+        }
+
+        function loadComments(reportId) {
+            fetch(`/obtener_comentarios/${reportId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    const commentsContainer = document.getElementById(`comments-${reportId}`);
+                    commentsContainer.innerHTML = '';  // Limpiar los comentarios previos
+
+                    data.forEach(comment => {
+                        const commentElement = document.createElement('div');
+                        commentElement.style.marginBottom = '10px';
+                        commentElement.innerHTML = `
+                            <p style="margin: 5px 0; font-size: 15px; color: #333;"><strong>${comment.usuario}:</strong> ${comment.contenido}</p>
+                            ${comment.imagen ? `<img src="${comment.imagen}" style="width: 260px; height: 200px; object-fit: cover; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.2); margin-top: 10px;">` : ''}
+                            <p style="font-size: 12px; color: #777;">${comment.fecha}</p>
+                        `;
+                        commentsContainer.appendChild(commentElement);
+                    });
+                })
+                .catch(error => console.error('Error al cargar comentarios:', error));
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const reporteId = urlParams.get("reporte_id");
+
+            if (reporteId) {
+                // Agrega una demora para asegurarte de que los marcadores se hayan cargado
+                setTimeout(() => {
+                    abrirModalReporte(parseInt(reporteId));
+                }, 1000); // Espera 2 segundos
+            }
+        });
+
+        function abrirModalReporte(reporteId) {
+            if (markers[reporteId]) {
+                const marker = markers[reporteId];
+                google.maps.event.trigger(marker, 'click');
+            } else {
+                console.error("No se encontró el marcador para el reporte con ID:", reporteId);
+            }
+        }
+
+        if (reporteId) {
+            const url = new URL(window.location);
+            url.searchParams.delete("reporte_id");
+            window.history.replaceState({}, document.title, url.toString());
+        }
+
     </script>
     
 {% endblock %}

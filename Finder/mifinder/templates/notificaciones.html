@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4" style="font-weight: bold;">Mis Notificaciones</h2>
+    <ul class="list-group mt-3">
+        {% for notificacion in notificaciones %}
+        <li class="list-group-item notification-item" id="notificacion-{{ notificacion.reporte_id }}">
+            <a href="{% url 'home' %}?reporte_id={{ notificacion.reporte_id }}" class="notification-link" onclick="marcarNotificacionLeida('{{ notificacion.reporte_id }}')">
+                <div class="notification-content">
+                    <p class="message">{{ notificacion.message }}</p>
+                    <span class="timestamp">{{ notificacion.created_at }}</span>
+                </div>
+            </a>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-center">No tienes notificaciones.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<style>
+    /* Estilo del contenedor */
+    .container {
+        max-width: 700px;
+        background: #f0f2f5;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Título */
+    h2 {
+        font-family: 'Arial', sans-serif;
+        font-size: 2rem;
+        color: #333;
+        text-transform: uppercase;
+    }
+
+    /* Estilo de la lista de notificaciones */
+    .list-group-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        border: none;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        overflow: hidden;
+        padding: 15px 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Contenido de la notificación */
+    .notification-content {
+        width: 100%;
+    }
+
+    /* Mensaje de la notificación */
+    .message {
+        font-size: 1.1rem;
+        color: #333;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    /* Fecha y hora de la notificación */
+    .timestamp {
+        font-size: 0.9rem;
+        color: #888;
+        font-style: italic;
+    }
+
+    /* Hover animation */
+    .notification-item:hover {
+        transform: scale(1.03);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animación */
+    .notification-item {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Aplica un retraso en cascada para cada elemento */
+    .notification-item:nth-child(1) { animation-delay: 0s; }
+    .notification-item:nth-child(2) { animation-delay: 0.2s; }
+    .notification-item:nth-child(3) { animation-delay: 0.4s; }
+    .notification-item:nth-child(4) { animation-delay: 0.6s; }
+    .notification-item:nth-child(5) { animation-delay: 0.8s; }
+    /* Puedes continuar esta secuencia si tienes más notificaciones */
+
+    /* Definición de la animación */
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .leida {
+        opacity: 0.5; /* Ejemplo: reduce la opacidad de las notificaciones leídas */
+    }
+</style>
+
+<script>
+    function marcarNotificacionLeida(id) {
+        fetch(`/marcar_notificacion_leida/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'), // Asegúrate de incluir el token CSRF
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Cambiar el estado de la notificación visualmente
+                const notificacionItem = document.getElementById(`notificacion-${id}`);
+                if (notificacionItem) {
+                    notificacionItem.classList.add('leida'); // Añadir una clase para indicar que está leída
+                }
+                // Actualizar el contador de notificaciones no leídas
+                actualizarContadorNotificaciones();
+            }
+        })
+        .catch(error => console.error('Error al marcar notificación como leída:', error));
+    }
+
+    function actualizarContadorNotificaciones() {
+        // Obtén el contador de notificaciones y réstale uno
+        const contadorElemento = document.querySelector('.notification-count');
+        if (contadorElemento) {
+            let contadorActual = parseInt(contadorElemento.textContent, 10);
+            contadorElemento.textContent = contadorActual > 0 ? contadorActual - 1 : 0;
+        }
+    }
+
+    // Función para obtener el token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
+{% endblock %}
