@@ -1,3 +1,6 @@
+from django.conf import settings
+import os
+from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect
 from django.db import connection
 from django.contrib import messages
@@ -79,6 +82,7 @@ def home_view(request):
         return redirect('login')
 
     user_id = request.session['user_id']
+    print("ID del usuario autenticado:", user_id)
 
     # Consultar las mascotas registradas por el usuario
     with connection.cursor() as cursor:
@@ -335,7 +339,7 @@ def report_pet(request):
 def obtener_reportes(request):
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT p.titulo, p.descripcion, p.fecha_publicacion, m.nombre, g.latitud, g.longitud, p.imagen, u.nombre, u.telefono
+            SELECT p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion, m.nombre, g.latitud, g.longitud, p.imagen, u.nombre, u.telefono
             FROM publicacion p
             JOIN mascota m ON p.id_mascota = m.id_mascota
             JOIN geolocalizacion g ON p.id_geolocalizacion = g.id_geolocalizacion
@@ -347,17 +351,141 @@ def obtener_reportes(request):
     # Formatear los datos para enviarlos en formato JSON
     reportes_json = [
         {
-            'titulo': r[0],
-            'descripcion': r[1],
-            'fecha': r[2].strftime("%Y-%m-%d %H:%M:%S"),
-            'nombre_mascota': r[3],
-            'latitud': float(r[4]),
-            'longitud': float(r[5]),
-            'imagen': r[6],
-            'nombre_usuario': r[7],
-            'telefono_usuario': r[8]
+            'id': r[0],  # Incluye el ID del reporte aquí
+            'titulo': r[1],
+            'descripcion': r[2],
+            'fecha': r[3].strftime("%Y-%m-%d %H:%M:%S"),
+            'nombre_mascota': r[4],
+            'latitud': float(r[5]),
+            'longitud': float(r[6]),
+            'imagen': r[7],
+            'nombre_usuario': r[8],
+            'telefono_usuario': r[9]
         } for r in reportes
     ]
     
     return JsonResponse(reportes_json, safe=False)
+
+@csrf_exempt
+def crear_comentario(request):
+    if request.method == 'POST':
+        contenido = request.POST.get('contenido')
+        id_publicacion = request.POST.get('id_publicacion')
+        id_usuario = request.session.get('user_id')  # Usuario que hace el comentario
+        imagen = request.FILES.get('imagen')  # Obtiene la imagen del comentario
+
+        if not id_usuario:
+            return JsonResponse({'mensaje': 'Debe iniciar sesión para comentar'}, status=403)
+
+        # Verifica que el ID de la publicación esté presente
+        if not id_publicacion:
+            return JsonResponse({'mensaje': 'ID de publicación no encontrado'}, status=400)
+
+        # Guardar la imagen en la carpeta "comentarios" dentro de MEDIA_ROOT
+        imagen_url = None
+        if imagen:
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'comentarios'))
+            filename = fs.save(imagen.name, imagen)
+            imagen_url = fs.url(filename)
+
+        # Insertar el comentario en la base de datos con la ruta de la imagen
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO comentario (id_publicacion, id_usuario, contenido, fecha_comentario, imagen)
+                VALUES (%s, %s, %s, NOW(), %s)
+            """, [id_publicacion, id_usuario, contenido, imagen_url])
+
+        # Crear una notificación solo si el usuario que comenta no es el dueño de la publicación
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT id_usuario FROM publicacion WHERE id_publicacion = %s", [id_publicacion])
+            publicacion = cursor.fetchone()
+        
+        if publicacion and id_usuario != publicacion[0]:  # Solo notificar si el comentario es de otro usuario
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO notificacion (id_usuario, mensaje, fecha_notificacion, estado, id_publicacion)
+                    VALUES (%s, %s, NOW(), 'no leída', %s)
+                """, [publicacion[0], f"Nuevo comentario en tu publicación: {contenido[:30]}...", id_publicacion])
+
+        return JsonResponse({'mensaje': 'Comentario añadido correctamente'})
+
+    return JsonResponse({'mensaje': 'Método no permitido'}, status=405)
+
+
+def obtener_comentarios(request, report_id):
+    # Supongamos que tienes un modelo o una consulta para obtener los comentarios
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.contenido, c.imagen, c.fecha_comentario, u.nombre AS usuario
+            FROM comentario c
+            JOIN usuario u ON c.id_usuario = u.id_usuario
+            WHERE c.id_publicacion = %s
+            ORDER BY c.fecha_comentario DESC
+        """, [report_id])
+        comentarios = cursor.fetchall()
+
+    # Formatear los resultados en un diccionario para JSON
+    comentarios_json = [
+        {
+            'contenido': comentario[0],
+            'imagen': comentario[1],
+            'fecha': comentario[2].strftime("%Y-%m-%d %H:%M:%S"),
+            'usuario': comentario[3],
+        }
+        for comentario in comentarios
+    ]
+
+    return JsonResponse(comentarios_json, safe=False)
+
+def crear_notificacion(user_id, mensaje, estado='no leída', reporte_id=None):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO notificacion (id_usuario, mensaje, fecha_notificacion, estado, reporte_id)
+            VALUES (%s, %s, NOW(), %s, %s)
+        """, [user_id, mensaje, estado, reporte_id])
+
+
+def ver_notificaciones(request):
+    if 'user_id' not in request.session:
+        return redirect('login')
+
+    user_id = request.session['user_id']
+    print("ID del usuario autenticado:", user_id)
+
+    # Consultar las notificaciones del usuario
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT mensaje, fecha_notificacion, estado, id_publicacion
+            FROM notificacion
+            WHERE id_usuario = %s
+            ORDER BY fecha_notificacion DESC
+        """, [user_id])
+        notificaciones_raw = cursor.fetchall()
+
+    # Procesar los resultados para la plantilla
+    notificaciones = [
+        {
+            'message': n[0],
+            'created_at': n[1],
+            'estado': n[2],
+            'reporte_id': n[3]  # Incluye el reporte_id
+        } for n in notificaciones_raw
+    ]
+
+    return render(request, 'notificaciones.html', {'notificaciones': notificaciones})
+    
+@require_POST
+def marcar_notificacion_leida(request, id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Usuario no autenticado'}, status=403)
+    
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE notificacion 
+            SET estado = 'leída' 
+            WHERE id_publicacion = %s AND id_usuario = %s
+        """, [id, user_id])
+    
+    return JsonResponse({'success': True})
 
