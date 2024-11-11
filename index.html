@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Finder</title>
+
+    <base href="/" />
+    
+    <!-- Responsive Meta Tags -->
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    
+    <!-- Link to Manifest and Favicon -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+
+    <!-- iOS PWA Settings (optional, remove if not needed) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Finder" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  </head>
+  
+  <body>
+    <!-- React app will be mounted here -->
+    <div id="root"></div>
+
+    <!-- Load Google Maps API Script -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlQZG1mCOGe8Nk5acj9b2isfhLWHnZDUY"></script>
+
+
+    <!-- Main React App Script -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
