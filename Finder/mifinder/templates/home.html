@@ -5,20 +5,27 @@
 
 {% block extra_head %}
     <!-- Cargar la API de Google Maps usando tu clave -->
-    
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyACq1zSio8eNuxQfiFBkTnOn8GY1s2B8pA"></script>
     
     <style>
         /* Ajustar el tamaño del mapa y centrarlo */
         #map {
-            height: 90vh; /* Ocupa el 90% de la altura de la ventana */
-            width: 90vw; /* Ocupa el 90% del ancho de la ventana */
-            border-radius: 20px; /* Bordes redondeados */
-            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3); /* Sombra alrededor del mapa */
-            position: absolute; /* Mantiene el mapa posicionado sobre la pantalla */
-            top: 7.5%; /* Centrado vertical */
-            left: 5%; /* Centrado horizontal */
+            position: absolute; /* Mantiene el mapa posicionado en relación al contenedor principal */
+            top: 85px; /* Altura del header o la franja naranja */
+            left: 0;
+            width: 100%; /* Ocupa todo el ancho disponible */
+            height: calc(100vh - 85px); /* Resta la altura del header para ocupar el resto del espacio */
+            z-index: 1; /* Asegúrate de que el mapa esté detrás de otros elementos si es necesario */
+            margin: 0;
+            padding: 0;
+            border: none; /* Elimina cualquier borde que pueda afectar el diseño */
         }
 
+        @media (max-width: 768px) {
+            #map {
+                height: 80vh; /* Menor altura para pantallas pequeñas */
+            }
+        }
         .search-container {
             position: fixed;
             top: 20px; /* Baja un poco para dejar más espacio en la parte superior */
@@ -71,13 +78,13 @@
             background-color: #ddd;
         }
 
-        /* Estilo del título "FINDER" en el header */
+        /* Estilo del título "FINDER" en el header 
         .navbar-brand {
             font-size: 24px;
             font-weight: bold;
             color: #FF5A5F;
             letter-spacing: 2px;
-        }
+        }*/
 
         .modal {
             display: none;
@@ -246,10 +253,7 @@
     <!-- Contenedor para el mapa -->
     <div id="map"></div>
 
-    <!-- Botón de reubicar posición -->
-    <div class="recenter-button" onclick="recenterMap()">
-        <img src="{% static 'img/locacion.png' %}" alt="Reubicar">
-    </div>
+    
     <!-- Modal para reportar mascota -->
     <div id="reportModal" class="report-modal">
         <div class="modal-content">
@@ -307,39 +311,67 @@
     
         // Inicializa el mapa, establece la ubicación del usuario y agrega la funcionalidad de clic
         function initMap() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const latLng = { lat: lat, lng: lng };
-    
-                    // Inicializa el mapa centrado en la ubicación del usuario
-                    map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: 13,
-                        center: latLng,
-                    });
-    
-                    // Añadir marcador en la ubicación del usuario
-                    new google.maps.Marker({
-                        position: latLng,
-                        map,
-                        title: 'Estás aquí!',
-                    });
-    
-                    // Evento para abrir el modal al hacer clic en el mapa
-                    map.addListener('click', function(e) {
-                        openReportModal(e.latLng.lat(), e.latLng.lng());
-                    });
-    
-                    // Cargar reportes existentes en el mapa
-                    cargarReportesEnMapa();
-                }, function() {
-                    alert("No se pudo obtener tu ubicación.");
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const latLng = { lat: lat, lng: lng };
+
+                // Estilos personalizados para el mapa
+                const styles = [
+                    {
+                        "featureType": "poi", // Puntos de interés
+                        "elementType": "labels.text.fill", // Texto de las etiquetas
+                        "stylers": [{ "color": "#d9534f" }] // Rojo Finder
+                    },
+                    {
+                        "featureType": "road", // Carreteras
+                        "elementType": "geometry", // Línea de las carreteras
+                        "stylers": [{ "color": "#ffffff" }] // Blanco para las carreteras
+                    },
+                    {
+                        "featureType": "road", // Carreteras
+                        "elementType": "geometry.stroke", // Bordes de las carreteras
+                        "stylers": [{ "color": "#d9534f" }] // Rojo Finder
+                    },
+                    {
+                        "featureType": "water", // Agua
+                        "elementType": "geometry", // Cuerpo de agua
+                        "stylers": [{ "color": "#eaf4f4" }] // Azul claro para agua
+                    }
+                ];
+
+                // Inicializa el mapa centrado en la ubicación del usuario
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 13,
+                    center: latLng,
+                    styles: styles // Aplicar estilos personalizados
                 });
-            } else {
-                alert("Geolocalización no soportada por tu navegador.");
-            }
+
+                // Añadir marcador en la ubicación del usuario
+                new google.maps.Marker({
+                    position: latLng,
+                    map,
+                    title: 'Estás aquí!',
+                    icon: {
+                        url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" // Icono rojo personalizado
+                    }
+                });
+
+                // Evento para abrir el modal al hacer clic en el mapa
+                map.addListener('click', function(e) {
+                    openReportModal(e.latLng.lat(), e.latLng.lng());
+                });
+
+                // Cargar reportes existentes en el mapa
+                cargarReportesEnMapa();
+            }, function() {
+                alert("No se pudo obtener tu ubicación.");
+            });
+        } else {
+            alert("Geolocalización no soportada por tu navegador.");
         }
+    }
 
         // Función para cargar los reportes en el mapa
         let markers = {};
@@ -494,24 +526,29 @@
         function addComment(reportId) {
             const form = document.getElementById(`comentarioForm-${reportId}`);
             const formData = new FormData(form);
-            formData.append('id_publicacion', reportId);  // Asegúrate de que el ID se esté enviando correctamente
+            formData.append('id_publicacion', reportId);
 
             fetch('/crear-comentario/', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken')  // Utiliza el token CSRF correctamente
+                    'X-CSRFToken': getCookie('csrftoken')
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => { throw new Error(data.mensaje || "Error desconocido"); });
+                }
+                return response.json();
+            })
             .then(data => {
-                alert(data.mensaje);  // Notificación de éxito
-                form.reset();  // Limpiar el formulario después de enviar
-                loadComments(reportId);  // Recargar los comentarios
+                alert(data.mensaje);
+                form.reset();
+                loadComments(reportId);
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Hubo un problema al enviar el comentario');
+                alert(error.message);
             });
         }
 

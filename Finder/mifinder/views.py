@@ -11,6 +11,38 @@ from django.core.files.storage import FileSystemStorage
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 from django.http import JsonResponse
+import cv2
+from django.core.files.storage import default_storage
+import numpy as np
+from PIL import Image
+from sklearn.metrics.pairwise import cosine_similarity
+import torch
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view
+from django.utils.decorators import method_decorator
+from torchvision import models, transforms
+import hashlib
+import time
+# Cargar el modelo ResNet50 preentrenado y remover la última capa
+model = models.resnet50(pretrained=True)
+model = torch.nn.Sequential(*(list(model.children())[:-1]))  # Remover la capa de clasificación final
+model.eval()
+
+# Transformación para extraer características
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+# Aumentaciones para simular condiciones de rotación y cambios de brillo
+augmentation_transforms = [
+    transforms.RandomRotation(degrees=[-30, 30]),  # Rotación entre -30 y 30 grados
+    transforms.ColorJitter(brightness=0.3),         # Variación en brillo
+]
 
 def index_view(request):
     return render(request, 'index.html')
@@ -129,13 +161,25 @@ def perfil(request):
 
     # Consultar las mascotas registradas por el usuario
     with connection.cursor() as cursor:
-        cursor.execute("SELECT nombre, raza, color, edad, descripcion FROM mascota WHERE id_usuario = %s", [user_id])
+        cursor.execute("SELECT nombre, raza, color, edad, descripcion, imagen FROM mascota WHERE id_usuario = %s", [user_id])
         mascotas = cursor.fetchall()
 
+    # Procesar las mascotas en un formato adecuado para la plantilla
+    mascotas = [
+        {
+            'nombre': m[0],
+            'raza': m[1],
+            'color': m[2],
+            'edad': m[3],
+            'descripcion': m[4],
+            'imagen': m[5] if m[5] else '/path/to/default/image.jpg'  # Imagen por defecto si no hay ninguna
+        } for m in mascotas
+    ]
+    
     # Consultar los reportes realizados por el usuario
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT p.titulo, p.descripcion, p.fecha_publicacion, m.nombre, g.latitud, g.longitud 
+            SELECT p.titulo, p.descripcion, p.fecha_publicacion, m.nombre, g.latitud, g.longitud, p.imagen
             FROM publicacion p
             JOIN mascota m ON p.id_mascota = m.id_mascota
             JOIN geolocalizacion g ON p.id_geolocalizacion = g.id_geolocalizacion
@@ -151,7 +195,8 @@ def perfil(request):
             'fecha': r[2],
             'nombre_mascota': r[3],
             'latitud': r[4],
-            'longitud': r[5]
+            'longitud': r[5],
+            'imagen': r[6] if r[6] else '/path/to/default/image.jpg'  # Imagen por defecto si no hay ninguna
         } for r in reportes
     ]
 
@@ -259,24 +304,41 @@ def registrar_mascota(request):
         color = request.POST.get('color')
         edad = request.POST.get('edad')
         descripcion = request.POST.get('descripcion')
+        imagen = request.FILES.get('imagen')
         user_id = request.session.get('user_id')
 
         if not user_id:
             messages.error(request, "Debes estar logueado para registrar una mascota.")
             return redirect('login')
 
+        # Guardar la imagen en la carpeta 'mis_mascotas'
+        imagen_url = None
+        if imagen:
+            # Define la subcarpeta
+            upload_folder = os.path.join(settings.MEDIA_ROOT, 'mis_mascotas')
+            os.makedirs(upload_folder, exist_ok=True)  # Crear la carpeta si no existe
+
+            # Guardar el archivo en la carpeta específica
+            file_path = os.path.join(upload_folder, imagen.name)
+            with open(file_path, 'wb+') as destination:
+                for chunk in imagen.chunks():
+                    destination.write(chunk)
+            
+            # Generar la URL para almacenar en la base de datos
+            imagen_url = f"/media/mis_mascotas/{imagen.name}"
+
         # Guardar la mascota en la base de datos
         with connection.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO mascota (id_usuario, nombre, raza, color, edad, descripcion)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, [user_id, nombre, raza, color, edad, descripcion])
+                INSERT INTO mascota (id_usuario, nombre, raza, color, edad, descripcion, imagen)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, [user_id, nombre, raza, color, edad, descripcion, imagen_url])
 
-        # Mostrar un mensaje de éxito
         messages.success(request, "Mascota registrada con éxito.")
         return redirect('mi_perfil')  # Redirigir a la misma página
 
     return render(request, 'registrar_mascota.html')
+
 
 
 @csrf_exempt
@@ -366,50 +428,107 @@ def obtener_reportes(request):
     
     return JsonResponse(reportes_json, safe=False)
 
+def obtener_embeddings_con_augmentacion(imagen_path):
+    """Extrae un embedding robusto aplicando rotaciones y cambios de brillo."""
+    imagen = Image.open(imagen_path).convert("RGB")
+    embeddings = []
+
+    # Extraer embeddings con y sin augmentación
+    for augment in augmentation_transforms + [None]:  # Incluye la versión original sin augmentación
+        if augment:
+            augmented_image = augment(imagen)
+        else:
+            augmented_image = imagen
+
+        transformed_image = transform(augmented_image).unsqueeze(0)
+        with torch.no_grad():
+            embedding = model(transformed_image).flatten()
+        embeddings.append(embedding.numpy())
+
+    # Promediar los embeddings obtenidos para obtener un embedding rotacionalmente invariante
+    promedio_embedding = np.mean(embeddings, axis=0)
+    return promedio_embedding
+
+def calcular_similitud_resnet(imagen1_path, imagen2_path):
+    """Calcula la similitud entre dos imágenes usando embeddings de ResNet con augmentación."""
+    embedding1 = obtener_embeddings_con_augmentacion(imagen1_path)
+    embedding2 = obtener_embeddings_con_augmentacion(imagen2_path)
+
+    # Calcular la similitud de coseno entre los embeddings
+    embedding1 = embedding1.reshape(1, -1)
+    embedding2 = embedding2.reshape(1, -1)
+    similitud = cosine_similarity(embedding1, embedding2)[0][0]
+    return similitud * 100  # Convertir a porcentaje
+
 @csrf_exempt
 def crear_comentario(request):
     if request.method == 'POST':
         contenido = request.POST.get('contenido')
         id_publicacion = request.POST.get('id_publicacion')
-        id_usuario = request.session.get('user_id')  # Usuario que hace el comentario
-        imagen = request.FILES.get('imagen')  # Obtiene la imagen del comentario
+        id_usuario = request.session.get('user_id')
+        imagen = request.FILES.get('imagen')
 
         if not id_usuario:
             return JsonResponse({'mensaje': 'Debe iniciar sesión para comentar'}, status=403)
 
-        # Verifica que el ID de la publicación esté presente
         if not id_publicacion:
             return JsonResponse({'mensaje': 'ID de publicación no encontrado'}, status=400)
 
-        # Guardar la imagen en la carpeta "comentarios" dentro de MEDIA_ROOT
         imagen_url = None
+        similitud_suficiente = False
+        similitud = 0
+
         if imagen:
             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'comentarios'))
             filename = fs.save(imagen.name, imagen)
-            imagen_url = fs.url(filename)
+            imagen_url = '/media/comentarios/' + filename
 
-        # Insertar el comentario en la base de datos con la ruta de la imagen
+            # Obtener la imagen del reporte para comparar
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT imagen FROM publicacion WHERE id_publicacion = %s", [id_publicacion])
+                publicacion = cursor.fetchone()
+
+            if publicacion and publicacion[0]:
+                ruta_imagen_reporte = os.path.join(settings.BASE_DIR, publicacion[0].replace('/media/', 'media/'))
+                ruta_imagen_comentario = os.path.join(settings.MEDIA_ROOT, 'comentarios', filename)
+
+                # Calcular la similitud usando ResNet con augmentación
+                similitud = calcular_similitud_resnet(ruta_imagen_reporte, ruta_imagen_comentario)
+                similitud_suficiente = similitud >= 75  # Cambiado a 75%
+                print(f"Similitud suficiente: {similitud_suficiente} con {similitud:.2f}% de similitud")
+
+        # Guardar el comentario en la base de datos
         with connection.cursor() as cursor:
             cursor.execute("""
                 INSERT INTO comentario (id_publicacion, id_usuario, contenido, fecha_comentario, imagen)
                 VALUES (%s, %s, %s, NOW(), %s)
             """, [id_publicacion, id_usuario, contenido, imagen_url])
 
-        # Crear una notificación solo si el usuario que comenta no es el dueño de la publicación
+        # Crear una notificación si la similitud es suficiente
         with connection.cursor() as cursor:
             cursor.execute("SELECT id_usuario FROM publicacion WHERE id_publicacion = %s", [id_publicacion])
-            publicacion = cursor.fetchone()
-        
-        if publicacion and id_usuario != publicacion[0]:  # Solo notificar si el comentario es de otro usuario
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO notificacion (id_usuario, mensaje, fecha_notificacion, estado, id_publicacion)
-                    VALUES (%s, %s, NOW(), 'no leída', %s)
-                """, [publicacion[0], f"Nuevo comentario en tu publicación: {contenido[:30]}...", id_publicacion])
+            owner_id = cursor.fetchone()[0]
+
+        if owner_id and id_usuario != owner_id:
+            if similitud_suficiente:
+                crear_notificacion(
+                    owner_id,
+                    f"Se ha encontrado una mascota con un {similitud:.2f}% de similitud.",
+                    id_publicacion=id_publicacion
+                )
+                print("Notificación de imagen similar creada.")
+            else:
+                crear_notificacion(
+                    owner_id,
+                    "Nuevo comentario en tu publicación.",
+                    id_publicacion=id_publicacion
+                )
+                print("Notificación de nuevo comentario creada.")
 
         return JsonResponse({'mensaje': 'Comentario añadido correctamente'})
 
     return JsonResponse({'mensaje': 'Método no permitido'}, status=405)
+
 
 
 def obtener_comentarios(request, report_id):
@@ -437,12 +556,13 @@ def obtener_comentarios(request, report_id):
 
     return JsonResponse(comentarios_json, safe=False)
 
-def crear_notificacion(user_id, mensaje, estado='no leída', reporte_id=None):
+def crear_notificacion(user_id, mensaje, estado='no leída', id_publicacion=None):
+    """Crea una notificación en la base de datos."""
     with connection.cursor() as cursor:
         cursor.execute("""
-            INSERT INTO notificacion (id_usuario, mensaje, fecha_notificacion, estado, reporte_id)
+            INSERT INTO notificacion (id_usuario, mensaje, fecha_notificacion, estado, id_publicacion)
             VALUES (%s, %s, NOW(), %s, %s)
-        """, [user_id, mensaje, estado, reporte_id])
+        """, [user_id, mensaje, estado, id_publicacion])
 
 
 def ver_notificaciones(request):
@@ -488,4 +608,3 @@ def marcar_notificacion_leida(request, id):
         """, [id, user_id])
     
     return JsonResponse({'success': True})
-

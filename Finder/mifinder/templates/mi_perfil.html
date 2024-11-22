@@ -1,199 +1,356 @@
 {% extends 'base.html' %}
+
 {% load static %}
 
-{% block title %}Mi Perfil{% endblock %}
-
-{% block extra_head %}
-<style>
-    .perfil-container {
-        text-align: center;
-        margin-top: 50px;
-        animation: fadeIn 0.6s ease-in-out;
-    }
-
-    .perfil-info {
-        font-size: 18px;
-        margin-bottom: 30px;
-    }
-
-    .btn-registrar-mascota {
-        padding: 12px 30px;
-        font-size: 16px;
-        color: white;
-        background-color: #a72828;
-        text-decoration: none;
-        border-radius: 30px;
-        margin-top: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-    }
-
-    .btn-registrar-mascota:hover {
-        background-color: #882121;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgb(255, 255, 255);
-    }
-
-    .profile-pic {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .profile-pic:hover {
-        transform: scale(1.05);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .profile-image-container {
-        position: relative;
-        display: inline-block;
-    }
-
-    .profile-image-container label {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        background-color: #fff;
-        border-radius: 50%;
-        padding: 5px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .icono-camara {
-        width: 24px;
-        height: 24px;
-        transition: all 0.3s ease;
-    }
-
-    .profile-image-container label:hover {
-        background-color: #f0f0f0;
-    }
-
-    /* Estilos para las tarjetas de mascotas y reportes */
-    .mascota-card {
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    margin-bottom: 20px;
-    background-color: #ffffff;
-    max-height: none; /* Permitir que la tarjeta crezca según el contenido */
-    height: auto; /* Ajustar la altura automáticamente */
-    overflow: visible; /* Asegurar que el contenido no se corte */
-    word-wrap: break-word; /* Romper palabras largas para que se ajusten */
-}
-
-.mascota-card:hover,
-.reporte-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0, 123, 255, 0.3);
-}
-/* Alinear el contenedor de las tarjetas en el centro */
-.container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .btn-primary {
-        padding: 12px 30px;
-        border-radius: 30px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
-    }
-</style>
-{% endblock %}
+{% block title %}Estructura Completa{% endblock %}
 
 {% block content %}
-<div class="perfil-container">
-    <h1>Mi Perfil</h1>
+<main>
+<!-- Enlace en la cabecera -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-    <form method="POST" enctype="multipart/form-data" action="{% url 'actualizar_imagen_perfil' %}">
-        {% csrf_token %}
-        <div class="profile-image-container">
-            <img src="{% if usuario.imagen_perfil %}{{ usuario.imagen_perfil }}{% else %}{% static 'img/imgperfil.jpg' %}{% endif %}" 
-                alt="Imagen de perfil" class="profile-pic">
-            <label for="file-input">
-                <img src="{% static 'img/mas.png' %}" class="icono-camara" alt="Cambiar imagen">
-            </label>
-            <input id="file-input" type="file" name="imagen_perfil" style="display: none;" onchange="this.form.submit()">
-        </div>
-    </form>
+<style>
+    /* Cambiar fuente y colores */
+    /* Estilo general de la página */
+    body {
+            font-family: 'Lato', sans-serif; /* Fuente bonita y clara */
+            color: #333;
+            background-color: #f9f9f9; /* Fondo claro */
+        }
 
-    <div class="perfil-info">
-        <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
-        <p><strong>Correo:</strong> {{ usuario.correo }}</p>
-        <p><strong>Teléfono:</strong> {{ usuario.telefono }}</p>
-        <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar perfil</a>
-    </div>
+        h2, h3 {
+            color: #000000; /* Naranja */
+            font-weight: 700; /* Negrita */
+            text-align: center; /* Centrar títulos */
+        }
 
- <!-- Secciones de Mascotas y Reportes en columnas -->
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6">
-            <h3>Mascotas Registradas</h3>
-            <div class="mt-4">
-                <div class="row">
-                    {% for mascota in mascotas %}
-                        <div class="col-md-12">
-                            <div class="card mascota-card">
-                                <p><strong>Nombre:</strong> {{ mascota.0 }}</p>
-                                <p><strong>Raza:</strong> {{ mascota.1 }}</p>
-                                <p><strong>Color:</strong> {{ mascota.2 }}</p>
-                                <p><strong>Edad:</strong> {{ mascota.3 }}</p>
-                                <p><strong>Descripción:</strong> {{ mascota.4 }}</p>
+        .card-title, .section-title {
+            color: #FF6A00; /* Naranja oscuro */
+            font-weight: bold;
+            font-size: 24px; /* Tamaño destacado */
+        }
+
+        .card-text {
+            color: #555; /* Texto complementario */
+            font-size: 16px;
+            line-height: 1.6; /* Espaciado entre líneas */
+        }
+
+        .btn-primary {
+            background-color: #FF7F00; /* Fondo naranja */
+            border: none;
+            color: white;
+            border-radius: 30px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #E06A00; /* Naranja más oscuro */
+        }
+
+        footer p {
+            color: #FF6A00;
+            font-size: 14px;
+        }
+
+        /* Bordes y fondo de las secciones */
+        .seccion {
+            border: 1px solid #ddd; /* Borde delgado */
+            border-radius: 8px; /* Bordes redondeados */
+            padding: 20px;
+            margin-bottom: 20px; /* Espaciado entre secciones */
+            background-color: #ffffff; /* Fondo blanco */
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        }
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-upload {
+            background-color: #FF6A00;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #fff;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .default-image {
+            background-image: url('/static/img/imgperfil.jpg');
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-color: #f0f0f0;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+</style>
+    <!-- Contenido Principal -->
+    <div style="display: flex; flex-direction: row; gap: 20px; padding: 20px;">
+        <!-- Artículo Principal -->
+        <article style="flex: 2; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);">
+
+            <!-- Sección de Mascotas Registradas -->
+            <div class="seccion">
+                <h3>Mascotas Registradas</h3>
+                <div id="mascotasCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <!-- Contenedor de tarjetas -->
+                    <div class="carousel-inner">
+                        {% for mascota in mascotas %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <div class="d-flex align-items-center justify-content-center" style="padding: 20px;">
+                                <!-- Imagen de la mascota -->
+                                <div style="margin-right: 50px; flex-shrink: 0;">
+                                    <img src="{{ mascota.imagen }}" 
+                                         alt="Imagen de {{ mascota.nombre }}" 
+                                         style="width: 300px; height: 300px; object-fit: cover; border-radius: 10px;">
+                                </div>
+                                <!-- Contenido de la tarjeta -->
+                                <div style="max-width: 500px; text-align: left;">
+                                    <h5 class="card-title">{{ mascota.nombre }}</h5>
+                                    <p class="card-text"><strong>Raza:</strong> {{ mascota.raza }}</p>
+                                    <p class="card-text"><strong>Color:</strong> {{ mascota.color }}</p>
+                                    <p class="card-text"><strong>Edad:</strong> {{ mascota.edad }}</p>
+                                    <p class="card-text"><strong>Descripción:</strong> {{ mascota.descripcion }}</p>
+                                </div>
                             </div>
                         </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
+
+                    <!-- Controles del carrusel -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#mascotasCarousel" data-bs-slide="prev" style="background: none; border: none;">
+                        <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
+                        <span class="visually-hidden">Atrás</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#mascotasCarousel" data-bs-slide="next" style="background: none; border: none;">
+                        <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <h3>Reportes Realizados</h3> <!-- Eliminé el mt-4 para reducir la distancia -->
-            <div class="container mt-3"> <!-- Cambié a mt-3 para ajustar un poco más -->
-                <div class="row">
-                    {% for reporte in reportes %}
-                        <div class="col-md-12">
-                            <div class="card mascota-card">
-                                <p><strong>Título:</strong> {{ reporte.titulo }}</p>
-                                <p><strong>Descripción:</strong> {{ reporte.descripcion }}</p>
-                                <p><strong>Fecha:</strong> {{ reporte.fecha }}</p>
-                                <p><strong>Mascota:</strong> {{ reporte.nombre_mascota }}</p>
-                                <p><strong>Ubicación:</strong> Lat: {{ reporte.latitud }}, Lng: {{ reporte.longitud }}</p>
+
+            <!-- Sección de Reportes Realizados -->
+            <div class="seccion">
+                <h3>Reportes Realizados</h3>
+                <div id="reportesCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <!-- Contenedor de tarjetas -->
+                    <div class="carousel-inner">
+                        {% for reporte in reportes %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <div class="d-flex align-items-center justify-content-center" style="padding: 20px;">
+                                <!-- Imagen del reporte -->
+                                <div style="margin-right: 20px; flex-shrink: 0;">
+                                    <img src="{{ reporte.imagen }}" 
+                                         alt="Imagen del reporte" 
+                                         style="width: 300px; height: 300px; object-fit: cover; border-radius: 10px;">
+                                </div>
+                                <!-- Contenido de la tarjeta -->
+                                <div style="max-width: 500px; text-align: left;">
+                                    <h5 class="card-title">{{ reporte.titulo }}</h5>
+                                    <p class="card-text"><strong>Descripción:</strong> {{ reporte.descripcion }}</p>
+                                    <p class="card-text"><strong>Fecha:</strong> {{ reporte.fecha }}</p>
+                                    <p class="card-text"><strong>Mascota:</strong> {{ reporte.nombre_mascota }}</p>
+                                    <p class="card-text"><strong>Ubicación:</strong> {{ reporte.latitud }}, {{ reporte.longitud }}</p>
+                                </div>
                             </div>
                         </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
+
+                    <!-- Controles del carrusel -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#reportesCarousel" data-bs-slide="prev" style="background: none; border: none;">
+                        <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
+                        <span class="visually-hidden">Atrás</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#reportesCarousel" data-bs-slide="next" style="background: none; border: none;">
+                        <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
+                </div>
+
+                <!-- Botón para Registrar Nuevo Reporte -->
+                <div class="text-center mt-4">
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        Registrar Nuevo Reporte
+                    </a>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+            <!-- Recuadro de Consejos de Cuidado -->
+            <div class="card mt-4" style="border-radius: 15px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+                <div class="card-body">
+                    <h3 class="text-center" style="color: #000000; font-weight: bold;">Lo que opinan nuestros usuarios</h3>
+                    <div id="testimoniosCarousel" class="carousel slide mt-4" data-bs-ride="carousel">
+                        <!-- Indicadores -->
+                        <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#testimoniosCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                            <button type="button" data-bs-target="#testimoniosCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                            <button type="button" data-bs-target="#testimoniosCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                            <button type="button" data-bs-target="#testimoniosCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                            <button type="button" data-bs-target="#testimoniosCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+                        </div>
+                        <!-- Carrusel -->
+                        <div class="carousel-inner">
+                            <!-- Testimonio 1 -->
+                            <div class="carousel-item active">
+                                <div class="d-flex flex-column align-items-center text-center">
+                                    <img src="{% static 'img/testimonio1.jpg' %}" alt="Foto de usuario" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;">
+                                    <p class="text-muted">"Gracias a Finder pude encontrar a mi perrito Max en solo 2 días. El sistema es increíble y muy fácil de usar."</p>
+                                    <small class="text-secondary"><strong>Gonzalo Fierro</strong></small>
+                                </div>
+                            </div>
+                            <!-- Testimonio 2 -->
+                            <div class="carousel-item">
+                                <div class="d-flex flex-column align-items-center text-center">
+                                    <img src="{% static 'img/testimonio2.jpg' %}" alt="Foto de usuario" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;">
+                                    <p class="text-muted">"Recomiendo Finder a todos. Gracias a esta herramienta recuperé a mi gatita Luna. Es una plataforma muy útil."</p>
+                                    <small class="text-secondary"><strong>Carla Martínez</strong></small>
+                                </div>
+                            </div>
+                            <!-- Testimonio 3 -->
+                            <div class="carousel-item">
+                                <div class="d-flex flex-column align-items-center text-center">
+                                    <img src="{% static 'img/testimonio3.jpg' %}" alt="Foto de usuario" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;">
+                                    <p class="text-muted">"La comunidad de Finder es muy activa. Encontré a mi mascota gracias a los reportes compartidos. ¡Gracias!"</p>
+                                    <small class="text-secondary"><strong>Sofía López</strong></small>
+                                </div>
+                            </div>
+                            <!-- Testimonio 4 -->
+                            <div class="carousel-item">
+                                <div class="d-flex flex-column align-items-center text-center">
+                                    <img src="{% static 'img/testimonio4.jpg' %}" alt="Foto de usuario" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;">
+                                    <p class="text-muted">"Excelente plataforma. Muy organizada y rápida. Encontré a mi mascota gracias a Finder."</p>
+                                    <small class="text-secondary"><strong>Pedro Ramírez</strong></small>
+                                </div>
+                            </div>
+                            <!-- Testimonio 5 -->
+                            <div class="carousel-item">
+                                <div class="d-flex flex-column align-items-center text-center">
+                                    <img src="{% static 'img/testimonio5.jpg' %}" alt="Foto de usuario" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;">
+                                    <p class="text-muted">"Mi experiencia con Finder fue increíble. Recuperé a mi gatito Toby en menos de una semana."</p>
+                                    <small class="text-secondary"><strong>María Fernández</strong></small>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Controles -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#testimoniosCarousel" data-bs-slide="prev" style="background: none; border: none;">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#testimoniosCarousel" data-bs-slide="next" style="background: none; border: none;">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
+                            <span class="visually-hidden">Siguiente</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </article>
 
-    <a href="{% url 'registrar_mascota' %}" class="btn-registrar-mascota">Registrar Nueva Mascota</a>
-</div>
+        <!-- Barra Lateral -->
+        <aside class="col-md-4">
+            <!-- Recuadro del perfil -->
+            <div class="card p-4 text-center" style="border-radius: 15px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); font-family: 'Poppins', sans-serif;">
+                <div class="text-center position-relative">
+                    <!-- Imagen del perfil -->
+                    <img src="{% if usuario.imagen_perfil %}{{ usuario.imagen_perfil }}{% else %}{% static 'img/imgperfil.jpg' %}{% endif %}" 
+                         alt="Foto de perfil" 
+                         class="img-fluid rounded-circle mb-3" 
+                         style="width: 150px; height: 150px; object-fit: cover; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+                    
+                    <!-- Botón para cambiar/agregar imagen -->
+                    <form method="POST" enctype="multipart/form-data" action="{% url 'actualizar_imagen_perfil' %}" class="position-absolute" style="bottom: 5px; right: 10px;">
+                        {% csrf_token %}
+                        <label for="upload-image" class="btn btn-light p-0" style="border-radius: 50%; width: 40px; height: 40px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);">
+                            <img src="{% static 'img/mas.png' %}" alt="Cambiar imagen" style="width: 100%; height: 100%; object-fit: cover;">
+                        </label>
+                        <input type="file" name="imagen_perfil" id="upload-image" accept="image/*" style="display: none;" onchange="this.form.submit()">
+                    </form>
+                </div>
+                <!-- Información del perfil -->
+                <h4 class="text-center" style="color: #333; font-weight: bold;">{{ usuario.nombre }}</h4>
+                <p style="font-size: 16px; color: #555; margin: 5px 0;">
+                    <strong>Correo:</strong> {{ usuario.correo }}
+                </p>
+                <p style="font-size: 16px; color: #555; margin: 5px 0;">
+                    <strong>Teléfono:</strong> {{ usuario.telefono }}
+                </p>
+                <!-- Botón para editar perfil -->
+                <div class="text-center mt-3">
+                    <a href="{% url 'editar_perfil' %}" class="btn btn-primary" style="background-color: #ff9100; border: none; border-radius: 30px; padding: 10px 20px; font-size: 14px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+                        Editar perfil
+                    </a>
+                </div>
+            </div>
+            <!-- Formulario para Registrar Mascota -->
+            <div class="card mt-5 p-4" style="width: 100%; max-width: none; margin: 20px 0; padding: 30px; background-color: #ffffff; border-radius: 15px; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);">
+                <h3 style="text-align: center; font-size: 24px; color: #FF6A00; font-weight: bold;">Registrar Nueva Mascota</h3>
+                <form method="POST" enctype="multipart/form-data" action="{% url 'registrar_mascota' %}">
+                    {% csrf_token %}
+                    <div class="image-upload text-center mb-4">
+                        <div class="image-preview default-image" id="imagePreview"></div>
+                        <label for="imagen" class="btn btn-upload mt-3">Subir Imagen</label>
+                        <input type="file" id="imagen" name="imagen" accept="image/*" onchange="previewImage(event)" style="display: none;">
+                    </div> 
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label" style="font-weight: bold; color: #333;">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="raza" class="form-label" style="font-weight: bold; color: #333;">Raza</label>
+                        <input type="text" id="raza" name="raza" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="color" class="form-label" style="font-weight: bold; color: #333;">Color</label>
+                        <input type="text" id="color" name="color" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edad" class="form-label" style="font-weight: bold; color: #333;">Edad</label>
+                        <input type="number" id="edad" name="edad" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label" style="font-weight: bold; color: #333;">Descripción</label>
+                        <textarea id="descripcion" name="descripcion" class="form-control" rows="3" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100" style="background-color: #FF6A00; border: none; border-radius: 10px; padding: 12px; color: #fff; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">Registrar Mascota</button>
+                </form>
+            </div>
+        </aside>
+        
+    </div>
+
+    <!-- Pie de Página -->
+    <footer style="background-color: #f2f2f2; padding: 10px; text-align: center; border-top: 2px solid #ddd; margin-top: 20px;">
+        <p>© 2024 Finder. Todos los derechos reservados.</p>
+    </footer>
+    <!-- Enlace del script al final del body -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function previewImage(event) {
+        const imagePreview = document.getElementById('imagePreview');
+        const file = event.target.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                imagePreview.style.backgroundImage = `url(${e.target.result})`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.backgroundImage = 'url("{% static "img/imgperfil.jpg" %}")';
+        }
+    }
+</script>
+</main>
 {% endblock %}

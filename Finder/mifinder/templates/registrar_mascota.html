@@ -1,182 +1,221 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Registrar Mascota{% endblock %}
+{% block title %}Registrar Nueva Mascota{% endblock %}
 
 {% block extra_head %}
-    <style>
-        /* Estilo para el contenedor del formulario */
-        .form-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            border-radius: 15px;
-            background-color: #ffffff;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 0.6s ease-in-out;
-        }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    body {
+        background-color: #f5f7fa;
+        font-family: 'Arial', sans-serif;
+    }
 
-        /* Título */
-        .form-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 28px;
-            color: #f95050;
-            animation: slideIn 0.8s ease-out;
-        }
+    .form-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.5s ease-in-out;
+    }
 
-        /* Grupo de formulario */
-        .form-group {
-            margin-bottom: 15px;
-        }
+    .form-container h2 {
+        text-align: center;
+        font-size: 28px;
+        color: #FF6A00;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
 
-        /* Etiquetas */
-        .form-group label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-        }
+    .form-container .form-group {
+        margin-bottom: 20px;
+    }
 
-        /* Campos de entrada */
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 20px;
-            border: 1px solid #ccc;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-            font-size: 16px;
-        }
+    .form-container .form-group label {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+    }
 
-        /* Efecto al hacer focus en los campos */
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
-        }
+    .form-container .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: 0.3s;
+    }
 
-        /* Botón de registro */
-        .btn-success {
-            background-color: #af4d4d;
-            border: none;
-            border-radius: 30px;
-            padding: 12px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
+    .form-container .form-control:focus {
+        border-color: #FF6A00;
+        box-shadow: 0 0 8px rgba(255, 106, 0, 0.2);
+    }
 
-        .btn-success:hover {
-            background-color: #893e3e;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
-        }
+    .form-container .image-upload {
+        text-align: center;
+        margin-bottom: 20px;
+    }
 
-        /* Botón para volver */
-        .btn-secondary {
-            background-color: #6c757d;
-            border: none;
-            border-radius: 30px;
-            padding: 10px;
-            font-size: 16px;
-            width: 100%;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
+    .form-container .image-preview {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        background-image: url("{% static 'img/imgperfil.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        transition: 0.3s;
+    }
 
-        .btn-secondary:hover {
-            background-color: #5a6268;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.2);
-        }
+    .form-container .image-preview:hover {
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+    }
 
-        /* Animaciones */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
+    .form-container .image-upload input[type="file"] {
+        display: none;
+    }
 
-        @keyframes slideIn {
-            from {
-                transform: translateY(-30px);
-            }
-            to {
-                transform: translateY(0);
-            }
-        }
+    .form-container .image-upload label {
+        display: inline-block;
+        background-color: #FF6A00;
+        color: #ffffff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
 
-    </style>
+    .form-container .image-upload label:hover {
+        background-color: #E06A00;
+    }
+
+    .form-container .btn-submit {
+        display: block;
+        width: 100%;
+        background-color: #FF6A00;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+
+    .form-container .btn-submit:hover {
+        background-color: #E06A00;
+        box-shadow: 0px 4px 10px rgba(255, 106, 0, 0.3);
+    }
+
+    .form-container .btn-back {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+        background-color: #6c757d;
+        color: #ffffff;
+        font-size: 14px;
+        border: none;
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .form-container .btn-back:hover {
+        background-color: #5a6268;
+        box-shadow: 0px 4px 10px rgba(108, 117, 125, 0.3);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-    <div class="form-container">
-        <h2>Registrar Mascota</h2>
+<div class="form-container">
+    <h2>Registrar Nueva Mascota</h2>
 
-        <!-- Mostrar mensajes de éxito o error -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags %} {{ message.tags }} {% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+    <form method="POST" enctype="multipart/form-data" action="{% url 'registrar_mascota' %}">
+        {% csrf_token %}
 
-        <!-- Formulario para registrar mascota -->
-        <form method="POST" enctype="multipart/form-data" action="{% url 'registrar_mascota' %}">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="nombre">Nombre de la mascota:</label>
-                <input type="text" id="nombre" name="nombre" required>
-            </div>
-
-            <div class="form-group">
-                <label for="raza">Raza:</label>
-                <input type="text" id="raza" name="raza" required>
-            </div>
-
-            <div class="form-group">
-                <label for="color">Color:</label>
-                <input type="text" id="color" name="color" required>
-            </div>
-
-            <div class="form-group">
-                <label for="edad">Edad:</label>
-                <input type="number" id="edad" name="edad" min="0" required>
-            </div>
-
-            <div class="form-group">
-                <label for="descripcion">Descripción:</label>
-                <textarea id="descripcion" name="descripcion" rows="4"></textarea>
-            </div>
-
-            <div class="form-group">
-                <button type="submit" class="btn btn-success">Registrar Mascota</button>
-            </div>
-        </form>
-
-        <!-- Botón para regresar al perfil -->
-        <div class="card-footer text-center">
-            <a href="{% url 'mi_perfil' %}" class="btn btn-secondary mt-2">Volver a Mi Perfil</a>
+        <!-- Imagen -->
+        <div class="image-upload">
+            <div class="image-preview" id="imagePreview"></div>
+            <label for="imagen">Subir Imagen de la Mascota</label>
+            <input type="file" id="imagen" name="imagen" accept="image/*" onchange="previewImage(event)">
         </div>
-    </div>
-{% endblock %}
 
-{% block extra_scripts %}
-    <script>
-        // Lógica para ocultar las alertas después de 5 segundos
-        setTimeout(function() {
-            var alert = document.querySelector('.alert');
-            if (alert) {
-                alert.style.display = 'none';
-            }
-        }, 5000);
-    </script>
+        <!-- Nombre -->
+        <div class="form-group">
+            <label for="nombre">Nombre de la Mascota</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Introduce el nombre de la mascota" required>
+        </div>
+
+        <!-- Raza -->
+        <div class="form-group">
+            <label for="raza">Raza</label>
+            <input type="text" id="raza" name="raza" class="form-control" placeholder="Introduce la raza de la mascota" required>
+        </div>
+
+        <!-- Color -->
+        <div class="form-group">
+            <label for="color">Color</label>
+            <input type="text" id="color" name="color" class="form-control" placeholder="Introduce el color de la mascota" required>
+        </div>
+
+        <!-- Edad -->
+        <div class="form-group">
+            <label for="edad">Edad</label>
+            <input type="number" id="edad" name="edad" class="form-control" placeholder="Introduce la edad de la mascota" min="0" required>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" name="descripcion" class="form-control" rows="4" placeholder="Añade una descripción de tu mascota"></textarea>
+        </div>
+
+        <!-- Botón de Registro -->
+        <button type="submit" class="btn-submit">Registrar Mascota</button>
+    </form>
+
+    <!-- Botón Volver -->
+    <a href="{% url 'mi_perfil' %}" class="btn-back">Volver</a>
+    
+</div>
+<!-- Pie de Página -->
+<footer style="background-color: #f2f2f2; padding: 10px; text-align: center; border-top: 2px solid #ddd; margin-top: 20px;">
+    <p>© 2024 Finder. Todos los derechos reservados.</p>
+</footer>
+<script>
+    function previewImage(event) {
+        const imagePreview = document.getElementById('imagePreview');
+        const file = event.target.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.style.backgroundImage = `url(${e.target.result})`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.backgroundImage = 'url("{% static "img/imgperfil.jpg" %}")'; // Imagen por defecto
+        }
+    }
+</script>
 {% endblock %}
