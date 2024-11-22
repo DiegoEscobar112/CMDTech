@@ -2,97 +2,685 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finder</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    
-    <!-- Google Maps API -->
-     
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página Principal</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    /* Fuente personalizada (importada desde Google Fonts) */
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700&family=Poppins:wght@400&display=swap');
+    header {
+        position: fixed; /* Hace que el header sea fijo */
+        top: 0; /* Fija el header en la parte superior */
+        left: 0; /* Alinea el header con el borde izquierdo */
+        width: 100%; /* Asegura que ocupe todo el ancho de la página */
+        z-index: 1000; /* Asegura que esté por encima de otros elementos */
+        background: linear-gradient(to right, #eae0e0, #d2dae0); /* Degradado de fondo */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para darle relieve */
+        padding: 10px 0; /* Ajusta el espaciado interno */
+    }
+
+  /* Estilo de los enlaces del menú */
+    .navbar-nav .nav-link {
+        font-family: 'Poppins', sans-serif; /* Fuente estilizada */
+        font-size: 1.1rem; /* Texto más grande */
+        font-weight: 600; /* Negrita ligera */
+        color: #343a40; /* Color oscuro */
+        transition: color 0.3s ease, transform 0.3s ease; /* Transiciones suaves */
+    }
+
+  /* Efecto hover en los enlaces */
+    .navbar-nav .nav-link:hover {
+        color: #ffb700; /* Cambia a azul al pasar el mouse */
+        transform: scale(1.1); /* Aumenta ligeramente el tamaño */
+    }
+      /* Botón destacado (por ejemplo, "Contáctanos") */
+    .btn-primary {
+        background-color: #ff9800; /* Tono naranja */
+        border-color: #ff9800; /* Borde naranja */
+        color: white; /* Color del texto */
+        font-size: 1rem;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-primary:hover {
+        background-color: #e68900; /* Tono naranja más oscuro al pasar el cursor */
+        border-color: #e68900;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Efecto de sombra */
+    }
+    .navbar-nav .btn-primary {
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        color: white;
+        background-color: #ff8000;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+      /* Efecto hover en el botón */
+    .navbar-nav .btn-primary:hover {
+        background-color: #b36e00; /* Azul más oscuro */
+        transform: scale(1.05); /* Efecto de agrandamiento */
+    }
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .hero {
+        background-color: #f8f9fa;
+        position: relative;
+        text-align: center;
+        padding: 100px 20px;
+        overflow: hidden;
+    }
+    .hero-title {
+        font-family: 'Nunito', sans-serif; /* Fuente para el título */
+        font-size: 4rem !important; /* Tamaño grande */
+        font-weight: 700; /* Negrita */
+        color: #000000; /* Azul intenso */
+        margin-bottom: 0.5rem; /* Espaciado con el subtítulo */
+    }
+    .highlight {
+        color: #e89b44; /* Naranja/rojo */
+        font-size: 4.8rem; /* Más grande que el resto */
+        font-weight: 700; /* Negrita */
+    }
+    .hero-subtitle {
+        font-family: 'Poppins', sans-serif; /* Fuente para el subtítulo */
+        font-size: 2.5rem; /* Tamaño mediano */
+        color: #6c757d; /* Gris suave */
+        line-height: 1.8; /* Altura de línea para mejor legibilidad */
+    }
+    .hero-subtitle strong {
+        color: #f9b057; /* Mismo color que el texto destacado */
+        font-weight: bold; /* Negrita */
+    }
+    .hero-images {
+        position: relative;
+        width: 100%;
+        height: 300px; /* Ajusta la altura según lo que necesites */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    .hero-img {
+        position: absolute;
+        width: auto;
+        height: 100%; /* O puedes usar un tamaño fijo como 300px */
+        object-fit: cover; /* Asegura que las imágenes se ajusten sin distorsión */
+        opacity: 0; /* Oculta las imágenes inicialmente */
+        transition: opacity 1s ease-in-out;
+    }
+    .hero-images img {
+        width: 650px; /* Aumenta el tamaño a 450px */
+        height: auto; /* Mantén la proporción */
+        border-radius: 10px; /* Bordes redondeados */
+    }
+
+    /* Efecto al pasar el mouse */
+    .hero-images img:hover {
+        transform: scale(1.1); /* Aumenta ligeramente el tamaño al pasar el mouse */
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3); /* Sombra más intensa */
+    }
+    .hero-img.active {
+        opacity: 1;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+    .hero p {
+      font-size: 1.5rem;
+    }
+    .services .card {
+      transition: transform 0.3s;
+    }
+    .services .card:hover {
+      transform: scale(1.05);
+    }
+    footer {
+      background: #333;
+      color: white;
+      padding: 20px 0;
+    }
+    footer a {
+      color: #ff8000;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    #found-pets {
+        background-color: #d2dae0 !important;
+        padding: 3rem 0;
+    }
+
+    #found-pets h2 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.5rem;
+        color: #000000;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+    }
+
+    .carousel .carousel-inner {
+        padding: 20px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .card img {
+        border-bottom: 2px solid #ffae00;
+    }
+
+    .card-img-top {
+        height: 450px; /* Altura fija */
+        width: 100%; /* Anchura completa */
+        object-fit: cover; /* Ajustar la imagen sin distorsionarla */
+        border-top-left-radius: 10px; /* Mantener bordes redondeados */
+        border-top-right-radius: 10px;
+    }
+
+    .card-body {
+        background-color: #ffffff;
+        padding: 1rem;
+        text-align: left;
+    }
+
+    .card-body h5 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.25rem;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-body p {
+        font-family: 'Roboto', sans-serif;
+        font-size: 0.95rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    .card-title {
+        color: #343a40;
+        font-weight: bold;
+    }
+
+    .card-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: #ffbb00;
+        border-radius: 50%;
+        padding: 10px;
+    }
+
+    .carousel-indicators button {
+        background-color: #ffae00; /* Color de los indicadores */
+    }
+
+    .carousel-indicators .active {
+        background-color: #ffae00; /* Color del indicador activo */
+    }
+
+    /* Estilo general */
+    #about {
+        background-color: #d2dae0 !important; /* Cambia este color según tu preferencia */
+        padding: 60px 0; /* Espaciado superior e inferior */
+        
+    }
+
+    #about h2 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.5rem;
+        color: #343a40;
+        font-weight: bold;
+    }
+
+    #about .icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+    }
+
+    #about h4 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.25rem;
+        color: #495057;
+        font-weight: bold;
+    }
+
+    #about p {
+        font-family: 'Roboto', sans-serif;
+        color: #6c757d;
+        line-height: 1.8;
+    }
+
+    #about .btn-primary {
+        background-color: #ff9800;
+        border-color: #ff9800;
+        font-size: 1rem;
+        padding: 10px 20px;
+        border-radius: 5px;
+    }
+
+    #services h2 {
+        font-family: 'Poppins', sans-serif; /* Fuente limpia y moderna */
+        font-size: 2.5rem; /* Tamaño del texto */
+        font-weight: bold; /* Negrita */
+        color: #ffa500; /* Color naranja */
+        text-align: center; /* Alineación centrada */
+        margin-bottom: 1.5rem; /* Espaciado inferior */
+        position: relative;
+    }
+
+    #services h2::after {
+        content: "";
+        display: block;
+        width: 80px;
+        height: 4px;
+        background-color: #ffa500; /* Línea debajo del título */
+        margin: 0.5rem auto 0; /* Centrado y espaciado */
+        border-radius: 2px; /* Bordes redondeados */
+    }
+
+    #contact {
+        background-color: #f8f9fa;
+        color: #343a40;
+    }
+
+    #contact h2 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffa500;
+    }
+
+    #contact .form-control {
+        border: 2px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    #contact .btn-primary {
+        background-color: #ffa500;
+        border-color: #ffa500;
+        font-size: 1.1rem;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    #contact .contact-info h4 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        font-size: 1.25rem;
+        margin-top: 20px;
+    }
+
+    #contact .btn-outline-primary, #contact .btn-outline-info {
+        border: 2px solid;
+        border-radius: 50px;
+        padding: 5px 15px;
+        font-size: 1rem;
+    }
+
+  </style>
 </head>
 <body>
+  <!-- Header -->
+  <header class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
     <div class="container">
-        <div class="hero-section">
-            <h1 class="framer-text">Finder</h1>
-            <div class="map-container">
-                <div id="map" style="height: 450px; width: 100%;"></div> <!-- Ajustamos el tamaño del mapa -->
-            </div>
-            <h2 class="custom-heading">Encuentra a tu mascota de una forma muy fácil</h2>
-        </div>
+      <!-- Logo -->
+      <a class="navbar-brand" href="http://127.0.0.1:8000">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 130px; width: auto;">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#about">Sobre Nosotros</a></li>
+          <li class="nav-item"><a class="nav-link" href="#services">Servicios</a></li>
+          <li class="nav-item"><a class="nav-link" href="http://127.0.0.1:8000/login/">Iniciar Sesión</a></li>
+          <li class="nav-item"><a class="nav-link" href="http://127.0.0.1:8000/register/">Registrarse</a></li>
+          <li class="nav-item"><a class="nav-link btn btn-primary text-white" href="#contact">Contáctanos</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
 
-        <div class="animal-box">
-            <img src="{% static 'img/dog.jpg' %}" alt="Perros">
-            <div class="animal-box-content">
-                <h2>Perros</h2>
-                <p>Podemos ayudar a encontrar a tus perritos y formar una buena comunidad!</p>
-                <button class="read-more">Leer más</button>
-            </div>
+  <!-- Hero Section -->
+    <section class="hero d-flex align-items-center" id="hero">
+        <div class="container text-center">
+            <h1 class="hero-title">Tu mejor amigo <span class="highlight">siempre contigo...</span></h1>
+            <p class="hero-subtitle">Un lugar para ayudar a los <strong>animales extraviados a volver a casa</strong> y a los rescatados a encontrar un nuevo hogar.</p>
+            <a href="#services" class="btn btn-primary btn-lg mt-3">Descubre Más</a>
+        </div>
+        <!-- Animación de imágenes -->
+        <div class="hero-images">
+            <img src="/media/animales_encontrados/fotobrand.jpeg" alt="Mascota 1" class="hero-img active">
+            <img src="/media/animales_encontrados/Brand-logo.png" alt="Mascota 2" class="hero-img">
+            <img src="/media/animales_encontrados/Brand-logo2.png" alt="Mascota 3" class="hero-img">
+        </div>
+    </section>
+
+<!-- Sobre Nosotros -->
+<section id="about" class="py-5 bg-light">
+    <div class="container text-center">
+      <h2 class="mb-5">Sobre Nosotros</h2>
+      <div class="row">
+        <!-- ¿Quiénes somos? -->
+        <div class="col-md-6 col-lg-3">
+          <div class="icon mb-3">
+            <i class="bi bi-people-fill" style="font-size: 2.5rem; color: #ff0000;"></i>
+          </div>
+          <h4 class="mb-3">¿Quiénes somos?</h4>
+          <p>
+            Finder es una aplicación gratuita que conecta a comunidades para reportar y encontrar mascotas perdidas, facilitando su regreso a casa.
+          </p>
+        </div>
+  
+        <!-- Nuestra misión -->
+        <div class="col-md-6 col-lg-3">
+          <div class="icon mb-3">
+            <i class="bi bi-bullseye" style="font-size: 2.5rem; color: #a72828;"></i>
+          </div>
+          <h4 class="mb-3">Nuestra misión</h4>
+          <p>
+            Crear una red comunitaria efectiva, apoyada por tecnología, para reducir el tiempo y esfuerzo en localizar mascotas perdidas.
+          </p>
+        </div>
+  
+        <!-- Ventajas del servicio -->
+        <div class="col-md-6 col-lg-3">
+          <div class="icon mb-3">
+            <i class="bi bi-image" style="font-size: 2.5rem; color: #ff0707;"></i>
+          </div>
+          <h4 class="mb-3">Ventajas del servicio</h4>
+          <p>
+            Finder utiliza análisis avanzado de imágenes con Machine Learning para detectar similitudes entre reportes, aumentando las probabilidades de reencuentro.
+          </p>
+        </div>
+  
+        <!-- Nuestra comunidad -->
+        <div class="col-md-6 col-lg-3">
+          <div class="icon mb-3">
+            <i class="bi bi-globe" style="font-size: 2.5rem; color: #b81717;"></i>
+          </div>
+          <h4 class="mb-3">Nuestra comunidad</h4>
+          <p>
+            Más que una aplicación, Finder es una red de apoyo que fomenta la colaboración para ayudar a las mascotas y sus dueños.
+          </p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <a href="#contact" class="btn btn-primary">Únete a Nosotros</a>
+      </div>
+    </div>
+  </section>
+  
+
+  <!-- Servicios -->
+  <section id="services" class="services bg-light py-5">
+    <div class="container">
+      <h2 class="text-center">Nuestros Servicios</h2>
+      <div class="row text-center mt-4">
+        <!-- Servicio 1 -->
+        <div class="col-md-4">
+          <div class="card p-3">
+            <i class="bi bi-flag-fill" style="font-size: 3.5rem; color: #b81717;"></i>
+            <h5 class="mt-3">Reporte de Mascotas Perdidas</h5>
+            <p>Permite a los usuarios reportar mascotas perdidas y generar alertas en su comunidad.</p>
+            <a href="#reporte" class="btn btn-outline-primary">Más Info</a>
+          </div>
         </div>
         
-        <div class="animal-box">
-            <img src="{% static 'img/cat.jpg' %}" alt="Gatos">
-            <div class="animal-box-content">
-                <h2>Gatos</h2>
-                <p>Los gatos son ágiles pero no imposibles de encontrar!</p>
-                <button class="read-more">Leer más</button>
-            </div>
+        <!-- Servicio 2 -->
+        <div class="col-md-4">
+          <div class="card p-3">
+            <i class="bi bi-search" style="font-size: 3.5rem; color: #b81717;"></i>
+            <h5 class="mt-3">Búsqueda Avanzada</h5>
+            <p>Busca mascotas extraviadas mediante tecnología avanzada de geolocalización.</p>
+            <a href="#busqueda" class="btn btn-outline-primary">Más Info</a>
+          </div>
         </div>
-
-        <div class="faq-section">
-            <h2>¿Qué es Finder?</h2>
-            <div class="faq-item">
-                <p>Finder es una aplicación web diseñada para actuar como una alerta comunitaria de animales. Su objetivo es facilitar la localización
-                    y recuperación de mascotas perdidas mediante la creación de una plataforma centralizada donde los usuarios pueden 
-                    reportar la pérdida de sus mascotas y recibir notificaciones si alguien las encuentra.</p>
-            </div>
+        
+        <!-- Servicio 3 -->
+        <div class="col-md-4">
+          <div class="card p-3">
+            <i class="bi bi-camera" style="font-size: 3.5rem; color: #b81717;"></i>
+            <h5 class="mt-3">Análisis de Similitudes por Imágenes</h5>
+            <p>Utiliza un sistema de análisis de imágenes basado en Machine Learning para encontrar coincidencias con reportes existentes.</p>
+            <a href="#analisis" class="btn btn-outline-primary">Más Info</a>
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
+  
 
-        <div class="cta-section">
-            <h2>Regístrate o inicia sesión</h2>
-            <div class="cta-buttons">
-                <a href="{% url 'register' %}" class="cta-button">Registrarse</a>
-                <a href="{% url 'login' %}" class="cta-button">Iniciar sesión</a>
+  <!-- Carrusel de Mascotas Encontradas -->
+<section id="found-pets" class="py-5 bg-light">
+    <div class="container text-center">
+      <h2 class="mb-4">Mascotas Encontradas</h2>
+      <div id="foundPetsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <!-- Indicadores del carrusel -->
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#foundPetsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#foundPetsCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#foundPetsCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+  
+        <!-- Contenido del carrusel -->
+        <div class="carousel-inner">
+          <!-- Slide 1 -->
+          <div class="carousel-item active">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/dog.4.jpg" class="card-img-top" alt="Mascota 1">
+                  <div class="card-body">
+                    <h5 class="card-title">Chimuelo</h5>
+                    <p class="card-text">Calle Los Quillayes 10757</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/dog.14.jpg" class="card-img-top" alt="Mascota 2">
+                  <div class="card-body">
+                    <h5 class="card-title">Gaspar</h5>
+                    <p class="card-text">Calle La Pastora 180</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/dog.64.jpg" class="card-img-top" alt="Mascota 3">
+                  <div class="card-body">
+                    <h5 class="card-title">Samantha</h5>
+                    <p class="card-text">Ignacio Fuentes 42 - San Bernardo</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Slide 2 -->
+          <div class="carousel-item">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/cat.35.jpg" class="card-img-top" alt="Mascota 4">
+                  <div class="card-body">
+                    <h5 class="card-title">Flaco</h5>
+                    <p class="card-text">Calle Varas Mena, 785</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/dog.56.jpg" class="card-img-top" alt="Mascota 5">
+                  <div class="card-body">
+                    <h5 class="card-title">Pluto</h5>
+                    <p class="card-text">Calle Caupolicán, 567 - Loc. 40</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/cat.36.jpg" class="card-img-top" alt="Mascota 6">
+                  <div class="card-body">
+                    <h5 class="card-title">Sopaipilla</h5>
+                    <p class="card-text">Avenida Vitacura, 5480 - Loc. 77</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Slide 3 -->
+          <div class="carousel-item">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/cat.39.jpg" class="card-img-top" alt="Mascota 7">
+                  <div class="card-body">
+                    <h5 class="card-title">Caramelo</h5>
+                    <p class="card-text">Cordovez 555</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/cat.69.jpg" class="card-img-top" alt="Mascota 8">
+                  <div class="card-body">
+                    <h5 class="card-title">Luna</h5>
+                    <p class="card-text">Avenida Balmaceda, 1629</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card">
+                  <img src="/media/animales_encontrados/cat.86.jpg" class="card-img-top" alt="Mascota 9">
+                  <div class="card-body">
+                    <h5 class="card-title">Griton</h5>
+                    <p class="card-text">Avenida Cuatro Esquinas 417 </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Controles del carrusel -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#foundPetsCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#foundPetsCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+      </div>
+    </div>
+  </section>
+  
+
+  <!-- Contacto -->
+  <section id="contact" class="py-5">
+    <div class="container">
+        <div class="row text-center mb-4">
+            <h2 class="mb-3">Contáctanos</h2>
+            <p class="lead">Estamos aquí para ayudarte. Por favor, completa el formulario o utiliza nuestros canales directos por si necesitas ayuda.</p>
+        </div>
+        <div class="row">
+            <!-- Formulario de contacto -->
+            <div class="col-md-6">
+                <form>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre</label>
+                        <input type="text" id="name" class="form-control" placeholder="Tu nombre">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" id="email" class="form-control" placeholder="Tu correo electrónico">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Mensaje</label>
+                        <textarea id="message" class="form-control" rows="4" placeholder="Escribe tu mensaje"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Enviar Mensaje</button>
+                </form>
+            </div>
+
+            <!-- Información de contacto -->
+            <div class="col-md-6">
+                <div class="contact-info">
+                    <h4>Dirección</h4>
+                    <p>Calle Libertador B. O'higgins 167, Santiago, Chile</p>
+                    <h4>Teléfono</h4>
+                    <p>+569-96630492</p>
+                    <h4>Síguenos</h4>
+                    <a href="#" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-facebook"></i> Facebook
+                    </a>
+                    <a href="#" class="btn btn-outline-info">
+                        <i class="bi bi-twitter"></i> Twitter
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+</section>
 
-    <footer>
-        <p>© 2024 Finder - Todos los derechos reservados</p>
-    </footer>
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center">
+      <p>&copy; 2024 Finder. Todos los derechos reservados.</p>
+    </div>
+  </footer>
 
-    <!-- Script para inicializar Google Maps -->
-    <script>
-        function initMap() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const latLng = { lat: lat, lng: lng };
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
-                    // Inicializar el mapa centrado en la ubicación del usuario
-                    const map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: 13,
-                        center: latLng,
-                    });
-
-                    // Colocar un marcador en la ubicación del usuario
-                    new google.maps.Marker({
-                        position: latLng,
-                        map: map,
-                        title: 'Estás aquí!',
-                    });
-                }, function() {
-                    alert("No se pudo obtener tu ubicación.");
-                });
-            } else {
-                alert("Geolocalización no soportada por tu navegador.");
-            }
-        }
-
-        // Cargar el mapa cuando la página esté lista
-        window.onload = initMap;
-    </script>
+  <script>
+    // Animación de cambio de imágenes
+    const heroImages = document.querySelectorAll(".hero-img");
+    let currentImageIndex = 0;
+  
+    function changeImage() {
+      heroImages[currentImageIndex].classList.remove("active");
+      currentImageIndex = (currentImageIndex + 1) % heroImages.length;
+      heroImages[currentImageIndex].classList.add("active");
+    }
+  
+    // Cambiar imágenes cada 3 segundos
+    setInterval(changeImage, 3000);
+  </script>
 </body>
 </html>

@@ -1,98 +1,367 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
+        /* Fuente personalizada (importada desde Google Fonts) */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700&family=Poppins:wght@400&display=swap');
+        header {
+            background: linear-gradient(to right, #eae0e0, #d2dae0); /* Degradado de grises */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+            width: 100%; /* Asegura que ocupe todo el ancho */
+            position: fixed; /* Fija el header en la parte superior */
+            top: 0;
+            left: 0;
+            z-index: 1000; /* Asegura que esté encima del contenido */
+        }
+        .login-container {
+            margin-top: 100px; /* Espaciado desde el header */
+            margin-bottom: 100px;
+            display: flex;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            width: 90%; /* Ajustar al 90% del ancho de la pantalla */
+            max-width: 1100px; /* Limita el ancho máximo */
+            height: auto; /* Altura automática */
+            flex-direction: row; /* Modo fila para pantallas grandes */
+        }
+        /* Fuente personalizada (importada desde Google Fonts) */
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column; /* Cambiar a layout vertical en móviles */
+                width: 100%; /* Ocupa todo el ancho de la pantalla */
+                height: auto; /* Ajusta la altura automáticamente */
+            }
+
+            .login-image {
+                display: none; /* Ocultar imagen en pantallas pequeñas */
+            }
+        }
+    /* Estilo de los enlaces del menú */
+        .navbar-nav .nav-link {
+            font-family: 'Poppins', sans-serif; /* Fuente estilizada */
+            font-size: 1.1rem; /* Texto más grande */
+            font-weight: 600; /* Negrita ligera */
+            color: #343a40; /* Color oscuro */
+            transition: color 0.3s ease, transform 0.3s ease; /* Transiciones suaves */
+        }
+
+    /* Efecto hover en los enlaces */
+        .navbar-nav .nav-link:hover {
+            color: #ffb700; /* Cambia a azul al pasar el mouse */
+            transform: scale(1.1); /* Aumenta ligeramente el tamaño */
+        }
+        .navbar-nav .btn-primary {
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            background-color: #ff8000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #e94b27;
+            border-color: #e94b27;
+            transform: scale(1.05);
+        }
+        /* Efecto hover en el botón */
+        .navbar-nav .btn-primary:hover {
+            background-color: #b36e00; /* Azul más oscuro */
+            transform: scale(1.05); /* Efecto de agrandamiento */
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Evita que haya scroll */
+        }
         body {
             margin: 0;
             padding: 0;
+            min-height: 100vh; /* Usa min-height en lugar de height */
+            background: #f7f7f7;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Asegura que el header no afecte el layout */
             align-items: center;
-            height: 100vh;
-            background: url('{% static "img/gatologin.jpg" %}') no-repeat center center fixed; /* Cambia esto según la ruta correcta */
-            background-size: cover; /* Ajusta el tamaño del fondo */
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
         }
 
-        .login-box {
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 60px;
-            border-radius: 10px;
-            text-align: center;
-            width: 300px;
+        .login-container {
+            display: flex;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            width: 1100px;
+            height: 500px;
         }
 
-        .login-box h1 {
-            margin-bottom: 20px;
+        .login-form {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .login-form h2 {
             font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
         }
 
-        .login-box input[type="text"],
-        .login-box input[type="password"] {
-            width: 93%;
-            padding: 10px;
-            margin: 10px 0;
-            background: #333;
-            border: none;
-            color: #fff;
-            border-radius: 5px;
-        }
-
-        .login-box input[type="submit"] {
+        .login-form input {
             width: 100%;
-            padding: 10px;
-            background: #010000;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .login-form input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+        }
+
+        .login-form input[type="submit"] {
+            background: #ff5733; /* Color base */
+            color: white;
             border: none;
-            border-radius: 5px;
-            color: #fff;
             cursor: pointer;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra inicial */
         }
 
-        .login-box input[type="submit"]:hover {
-            background: #4b25a9;
+        .login-form input[type="submit"]:hover {
+            background: #e94b27; /* Color más naranja al pasar el cursor */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Incrementa la sombra */
+            transform: scale(1.05); /* Hace que el botón crezca ligeramente */
         }
 
-        .login-box a {
-            color: #945af7;
+        .login-form a {
             text-decoration: none;
             font-size: 14px;
+            color: #555;
         }
 
-        .login-box a:hover {
+        .login-form a:hover {
             text-decoration: underline;
         }
+
+        .login-image {
+            flex: 1;
+            background: url('/media/animales_encontrados/perrofeliz.jpg') no-repeat center center;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .login-image h3 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .login-image p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .login-image a {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 2px solid white;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .login-image a:hover {
+            background: #e94b27; /* Color de hover más oscuro */
+            color: white;
+            transform: scale(1.05); /* Agranda ligeramente el botón al pasar el cursor */
+        }
+        footer {
+            width: 100%; /* Asegura que el footer ocupe todo el ancho */
+            background: linear-gradient(to right, #eae0e0, #d2dae0);
+            color: #333; /* Cambia el texto a gris oscuro */
+            padding: 20px 0; /* Espaciado vertical */
+            font-family: 'Poppins', sans-serif; /* Fuente elegante */
+            font-size: 0.85rem; /* Tamaño del texto reducido */
+        }
+
+        footer .container {
+            max-width: 1200px; /* Ajusta el contenido del footer */
+        }
+
+        .footer h5 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .footer a {
+            color: #ff9800; /* Color de los enlaces */
+            text-decoration: none; /* Sin subrayado */
+            transition: color 0.3s ease; /* Transición para hover */
+        }
+
+        .footer a:hover {
+            color: #ffa500; /* Color más claro al pasar el cursor */
+        }
+
+        footer .footer-links {
+            display: flex; /* Alinear en fila */
+            justify-content: center; /* Centrar horizontalmente */
+            gap: 20px; /* Espaciado entre enlaces */
+        }
+        footer p {
+            margin: 0; /* Sin margen */
+        }
+        footer .d-flex a {
+            color: #333; /* Color oscuro para los iconos */
+            margin-right: 15px; /* Espaciado entre iconos */
+            transition: color 0.3s ease; /* Transición suave al hover */
+        }
+        footer .d-flex a:hover {
+            color: #ff8000; /* Color naranja al pasar el cursor */
+        }
+
+        .footer p, .footer i {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .footer .bi {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .footer .bi:hover {
+            transform: scale(1.2);
+        }
+
+        .footer .bg-secondary {
+            background-color: #444444;
+            font-size: 0.85rem;
+        }
+
+        .footer img {
+            max-height: 50px; /* Ajusta la altura del logo */
+        }
+        
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <h1>Login</h1>
-        <!-- Mostrar los mensajes -->
-        {% if messages %}
-            <div class="messages">
-                <ul>
-                    {% for message in messages %}
-                        <li class="{% if message.tags %} {{ message.tags }} {% endif %}">
-                            {{ message }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
+    <!-- Header -->
+    <header class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand" href="http://127.0.0.1:8000">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 130px; width: auto;">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="#about">Sobre Nosotros</a></li>
+            <li class="nav-item"><a class="nav-link" href="#services">Servicios</a></li>
+            <li class="nav-item"><a class="nav-link btn btn-primary text-white" href="#contact">Contáctanos</a></li>
+            </ul>
+        </div>
+        </div>
+    </header>
+    <div class="login-container">
+        <!-- Formulario de login -->
+        <div class="login-form">
+            <h2>Introduce tus datos</h2>
+            <form action="{% url 'login' %}" method="POST">
+                {% csrf_token %}
+                
+                <!-- Campo Correo -->
+                <div class="input-group mb-3">
+                    <span class="input-group-text bg-light border-0 align-middle" style="height: 45px;">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" name="correo" class="form-control border-0 shadow-sm" style="height: 45px;" placeholder="Correo" required>
+                </div>
+                
+                <!-- Campo Contraseña -->
+                <div class="input-group mb-3">
+                    <span class="input-group-text bg-light border-0 align-middle" style="height: 45px;">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" name="contrasena" class="form-control border-0 shadow-sm" style="height: 45px;" placeholder="Contraseña" required>
+                </div>
+        
+                <!-- Enlace de Olvidaste tu contraseña -->
+                <a href="#" class="text-decoration-none d-block mb-3" style="font-size: 0.9rem;">¿Olvidaste tu contraseña?</a>
+                
+                <!-- Botón de Iniciar Sesión -->
+                <input type="submit" value="Iniciar sesión" class="btn btn-primary btn-block" style="background-color: #ff5733; border-color: #ff5733; border-radius: 25px; font-weight: bold;">
+            </form>
+        </div>
+        
 
-        <form action="{% url 'login' %}" method="POST">
-            {% csrf_token %}
-            <input type="text" name="correo" placeholder="Correo" required>
-            <input type="password" name="contrasena" placeholder="Contraseña" required>
-            <input type="submit" value="Ingresar">
-        </form>
-        <p>¿No tienes una cuenta aún?<a href= "{% url 'register' %}"> Registrate!</a></p>
+        <!-- Imagen lateral -->
+        <div class="login-image">
+            <h3>¡Hola amigo humano!</h3>
+            <p>¿Aún no estás registrado?</p>
+            <a href="{% url 'register' %}">Ir a crear cuenta</a>
+        </div>
     </div>
+    <!-- Footer -->
+    <footer class="footer py-4">
+        <div class="container text-center text-md-start">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <img src="/media/animales_encontrados/logofinder.png" alt="Logo Finder" style="height: 80px;">
+              <p class="mt-2">Te ayudamos a reportar, localizar y difundir mascotas perdidas para que vuelvan a casa.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Enlaces Rápidos</h5>
+              <ul class="list-unstyled">
+                <li><a href="#about" class="text-dark">Sobre Nosotros</a></li>
+                <li><a href="#services" class="text-dark">Servicios</a></li>
+                <li><a href="#contact" class="text-dark">Contáctanos</a></li>
+                <li><a href="#testimonials" class="text-dark">Testimonios</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h5>Contacto</h5>
+              <p><i class="bi bi-envelope"></i> contacto@finder.com</p>
+              <p><i class="bi bi-telephone"></i> +56 9 96630492</p>
+              <div class="d-flex">
+                <a href="#" class="text-dark"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="text-dark"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="text-dark"><i class="bi bi-twitter"></i></a>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class="text-center">
+            <p>&copy; 2024 Finder. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
 </body>
 </html>
