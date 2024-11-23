@@ -567,12 +567,10 @@ def crear_notificacion(user_id, mensaje, estado='no leída', id_publicacion=None
 
 def ver_notificaciones(request):
     if 'user_id' not in request.session:
-        return redirect('login')
+        return JsonResponse({'error': 'Usuario no autenticado'}, status=403)
 
     user_id = request.session['user_id']
-    print("ID del usuario autenticado:", user_id)
 
-    # Consultar las notificaciones del usuario
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT mensaje, fecha_notificacion, estado, id_publicacion
@@ -582,17 +580,17 @@ def ver_notificaciones(request):
         """, [user_id])
         notificaciones_raw = cursor.fetchall()
 
-    # Procesar los resultados para la plantilla
     notificaciones = [
         {
             'message': n[0],
-            'created_at': n[1],
+            'created_at': n[1].strftime("%Y-%m-%d %H:%M:%S"),
             'estado': n[2],
-            'reporte_id': n[3]  # Incluye el reporte_id
-        } for n in notificaciones_raw
+            'reporte_id': n[3]
+        }
+        for n in notificaciones_raw
     ]
 
-    return render(request, 'notificaciones.html', {'notificaciones': notificaciones})
+    return JsonResponse(notificaciones, safe=False)
     
 @require_POST
 def marcar_notificacion_leida(request, id):

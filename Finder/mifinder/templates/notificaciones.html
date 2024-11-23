@@ -4,7 +4,6 @@
 {% block title %}Notificaciones{% endblock %}
 
 {% block extra_head %}
-<img id="cat-cursor" src="{% static 'img/gato-cursor.png' %}" alt="Gato sigue el cursor">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock %}
 
@@ -28,10 +27,7 @@
 </div>
 
 <style>
-    /* Cursor del gatito */
-    body {
-        cursor: url("{% static 'img/gato-cursor.png' %}"), auto;
-    }
+
 
     /* Estilo de huellas para el hover */
     .list-group-item:hover {
@@ -194,45 +190,4 @@
     }
 </script>
 
-<script>
-    // Función para generar una patita en una posición aleatoria
-    function createPawPrint() {
-        const pawPrint = document.createElement("div");
-        pawPrint.classList.add("paw-print");
-        document.body.appendChild(pawPrint);
-
-        const x = Math.random() * (window.innerWidth - 50);
-        const y = Math.random() * window.innerHeight;
-
-        pawPrint.style.left = `${x}px`;
-        pawPrint.style.top = `${y}px`;
-
-        setTimeout(() => {
-            pawPrint.classList.add("active");
-        }, 50);
-
-        setTimeout(() => {
-            pawPrint.classList.remove("active");
-            setTimeout(() => pawPrint.remove(), 500);
-        }, 2000);
-    }
-
-    function generateMultiplePawPrints() {
-        const pawCount = 10;
-        for (let i = 0; i < pawCount; i++) {
-            createPawPrint();
-        }
-    }
-
-    setInterval(generateMultiplePawPrints, 2000);
-</script>
-
-<script>
-    document.addEventListener('mousemove', function(e) {
-        const cat = document.getElementById('cat-cursor');
-        const x = e.pageX - cat.width / 2;
-        const y = e.pageY - cat.height / 2;
-        cat.style.transform = `translate(${x}px, ${y}px)`;
-    });
-</script>
 {% endblock %}

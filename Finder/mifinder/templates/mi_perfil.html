@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Estructura Completa{% endblock %}
+{% block title %}Mi perfil{% endblock %}
 
 {% block content %}
 <main>
@@ -13,89 +13,238 @@
 
 <style>
     /* Cambiar fuente y colores */
-    /* Estilo general de la página */
+    /* Variables de colores */
+    :root {
+        --primary-color: #E8F1F2; /* Gris claro azulado */
+        --secondary-color: #4FB2B8; /* Azul suave */
+        --accent-color: #F283A6; /* Rosa pastel */
+        --neutral-color: #F7F4F2; /* Beige claro */
+        --text-primary: #37474F; /* Gris oscuro */
+    }
+
     body {
-            font-family: 'Lato', sans-serif; /* Fuente bonita y clara */
-            color: #333;
-            background-color: #f9f9f9; /* Fondo claro */
-        }
+        font-family: 'Lato', sans-serif;
+        background-color: var(--primary-color); /* Fondo gris claro azulado */
+        color: var(--text-primary); /* Texto principal en gris oscuro */
+    }
 
-        h2, h3 {
-            color: #000000; /* Naranja */
-            font-weight: 700; /* Negrita */
-            text-align: center; /* Centrar títulos */
-        }
+    .navbar {
+        background-color: var(--neutral-color); /* Beige claro */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .card-title, .section-title {
-            color: #FF6A00; /* Naranja oscuro */
-            font-weight: bold;
-            font-size: 24px; /* Tamaño destacado */
-        }
+    .navbar-brand img {
+        height: 60px; /* Tamaño del logo ajustado */
+    }
 
-        .card-text {
-            color: #555; /* Texto complementario */
-            font-size: 16px;
-            line-height: 1.6; /* Espaciado entre líneas */
-        }
+    .nav-link {
+        color: var(--text-primary); /* Gris oscuro */
+        font-size: 16px;
+        font-weight: bold;
+        margin-right: 10px;
+        transition: color 0.3s;
+    }
 
-        .btn-primary {
-            background-color: #FF7F00; /* Fondo naranja */
-            border: none;
-            color: white;
-            border-radius: 30px;
-            transition: background-color 0.3s ease;
-        }
+    .nav-link:hover {
+        color: var(--accent-color); /* Rosa pastel */
+    }
 
-        .btn-primary:hover {
-            background-color: #E06A00; /* Naranja más oscuro */
-        }
+    h2, h3 {
+        color: var(--secondary-color); /* Azul suave */
+        font-weight: 700;
+        text-align: center;
+    }
 
-        footer p {
-            color: #FF6A00;
-            font-size: 14px;
-        }
+    .card {
+        background: var(--neutral-color); /* Beige claro */
+        border: 1px solid var(--secondary-color); /* Azul suave */
+        border-radius: 15px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        transition: transform 0.2s, box-shadow 0.2s ease-in-out;
+    }
 
-        /* Bordes y fondo de las secciones */
-        .seccion {
-            border: 1px solid #ddd; /* Borde delgado */
-            border-radius: 8px; /* Bordes redondeados */
-            padding: 20px;
-            margin-bottom: 20px; /* Espaciado entre secciones */
-            background-color: #ffffff; /* Fondo blanco */
-            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
-        }
-        .image-preview {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 15px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            background-size: cover;
-            background-position: center;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
+    .card:hover {
+        transform: scale(1.02);
+        box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    }
 
-        .btn-upload {
-            background-color: #FF6A00;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 16px;
-            color: #fff;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        .default-image {
-            background-image: url('/static/img/imgperfil.jpg');
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 15px;
-            border-radius: 50%;
-            background-size: cover;
-            background-position: center;
-            background-color: #f0f0f0;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
+    .card h3 {
+        text-align: center;
+        font-size: 24px;
+        color: var(--accent-color); /* Rosa pastel */
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--accent-color); /* Rosa pastel */
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .card-divider {
+        border-top: 1px solid var(--secondary-color); /* Azul suave */
+        margin: 10px 0;
+    }
+
+    .card-text {
+        font-size: 1rem;
+        color: var(--text-primary); /* Gris oscuro */
+        margin-bottom: 5px;
+        line-height: 1.6;
+    }
+
+    .card::before {
+        content: "";
+        width: 5px;
+        height: 100%;
+        background-color: var(--secondary-color); /* Azul suave */
+        position: absolute;
+        left: 0;
+        top: 0;
+        border-radius: 15px 0 0 15px;
+    }
+
+    .btn-primary {
+        background-color: var(--accent-color); /* Rosa pastel */
+        color: var(--neutral-color); /* Beige claro */
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--secondary-color); /* Azul suave */
+    }
+
+    footer {
+        background-color: var(--neutral-color); /* Beige claro */
+        color: var(--text-primary); /* Gris oscuro */
+        text-align: center;
+        padding: 20px;
+    }
+
+    footer p {
+        color: var(--accent-color); /* Rosa pastel */
+        font-size: 14px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: var(--secondary-color); /* Azul suave */
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Formularios */
+    .form-control {
+        border: 1px solid var(--secondary-color); /* Azul suave */
+        border-radius: 5px;
+        padding: 12px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color); /* Rosa pastel */
+        box-shadow: 0 0 5px rgba(242, 131, 166, 0.5); /* Sombra rosa */
+    }
+
+    /* Bordes y fondo de las secciones */
+    .seccion {
+        border: 1px solid var(--secondary-color); /* Azul suave */
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        background-color: var(--neutral-color); /* Beige claro */
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-preview {
+        background-color: var(--neutral-color); /* Beige claro */
+        border: 2px solid var(--secondary-color); /* Azul suave */
+    }
+
+    .btn-upload {
+        background-color: var(--secondary-color); /* Azul suave */
+        border: none;
+        border-radius: 20px;
+        padding: 8px 16px;
+        color: var(--neutral-color); /* Beige claro */
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .btn-upload:hover {
+        background-color: var(--accent-color); /* Rosa pastel */
+    }
+
+    .btn-success {
+        background-color: var(--secondary-color); /* Azul suave */
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        color: var(--neutral-color); /* Beige claro */
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success:hover {
+        background-color: var(--accent-color); /* Rosa pastel */
+        color: var(--neutral-color); /* Beige claro */
+    }
+
+    .default-image {
+        background-image: url('/static/img/imgperfil.jpg');
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        background-color: var(--neutral-color);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        background-color: var(--neutral-color); /* Beige claro */
+        color: var(--secondary-color); /* Azul suave */
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .btn-edit-profile {
+        background-color: var(--secondary-color); /* Azul suave */
+        border: none;
+        border-radius: 30px;
+        padding: 10px 20px;
+        font-size: 14px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        color: var(--neutral-color); /* Beige claro */
+        font-weight: bold;
+        text-decoration: none; /* Elimina el subrayado */
+        transition: all 0.3s ease;
+        display: inline-block; /* Asegura un buen comportamiento en contenedores */
+    }
+
+    .btn-edit-profile:hover {
+        background-color: var(--accent-color); /* Rosa pastel */
+        color: var(--neutral-color); /* Beige claro */
+        transform: scale(1.05); /* Efecto de zoom al pasar el cursor */
+    }
 </style>
+
+
+
     <!-- Contenido Principal -->
     <div style="display: flex; flex-direction: row; gap: 20px; padding: 20px;">
         <!-- Artículo Principal -->
@@ -103,7 +252,7 @@
 
             <!-- Sección de Mascotas Registradas -->
             <div class="seccion">
-                <h3>Mascotas Registradas</h3>
+                <h3 class="section-title">Mascotas Registradas</h3>
                 <div id="mascotasCarousel" class="carousel slide" data-bs-ride="carousel">
                     <!-- Contenedor de tarjetas -->
                     <div class="carousel-inner">
@@ -111,14 +260,15 @@
                         <div class="carousel-item {% if forloop.first %}active{% endif %}">
                             <div class="d-flex align-items-center justify-content-center" style="padding: 20px;">
                                 <!-- Imagen de la mascota -->
-                                <div style="margin-right: 50px; flex-shrink: 0;">
+                                <div style="margin-right: 20px; flex-shrink: 0;">
                                     <img src="{{ mascota.imagen }}" 
                                          alt="Imagen de {{ mascota.nombre }}" 
                                          style="width: 300px; height: 300px; object-fit: cover; border-radius: 10px;">
                                 </div>
                                 <!-- Contenido de la tarjeta -->
-                                <div style="max-width: 500px; text-align: left;">
+                                <div class="card" style="max-width: 500px; text-align: left;">
                                     <h5 class="card-title">{{ mascota.nombre }}</h5>
+                                    <div class="card-divider"></div> <!-- Franja separadora -->
                                     <p class="card-text"><strong>Raza:</strong> {{ mascota.raza }}</p>
                                     <p class="card-text"><strong>Color:</strong> {{ mascota.color }}</p>
                                     <p class="card-text"><strong>Edad:</strong> {{ mascota.edad }}</p>
@@ -128,7 +278,7 @@
                         </div>
                         {% endfor %}
                     </div>
-
+            
                     <!-- Controles del carrusel -->
                     <button class="carousel-control-prev" type="button" data-bs-target="#mascotasCarousel" data-bs-slide="prev" style="background: none; border: none;">
                         <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
@@ -143,7 +293,7 @@
 
             <!-- Sección de Reportes Realizados -->
             <div class="seccion">
-                <h3>Reportes Realizados</h3>
+                <h3 class="section-title">Reportes Realizados</h3>
                 <div id="reportesCarousel" class="carousel slide" data-bs-ride="carousel">
                     <!-- Contenedor de tarjetas -->
                     <div class="carousel-inner">
@@ -154,11 +304,12 @@
                                 <div style="margin-right: 20px; flex-shrink: 0;">
                                     <img src="{{ reporte.imagen }}" 
                                          alt="Imagen del reporte" 
-                                         style="width: 300px; height: 300px; object-fit: cover; border-radius: 10px;">
+                                         style="width: 200px; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
                                 </div>
-                                <!-- Contenido de la tarjeta -->
-                                <div style="max-width: 500px; text-align: left;">
+                                <!-- Información del reporte -->
+                                <div class="card" style="max-width: 500px; text-align: left;">
                                     <h5 class="card-title">{{ reporte.titulo }}</h5>
+                                    <div class="card-divider"></div> <!-- Franja separadora -->
                                     <p class="card-text"><strong>Descripción:</strong> {{ reporte.descripcion }}</p>
                                     <p class="card-text"><strong>Fecha:</strong> {{ reporte.fecha }}</p>
                                     <p class="card-text"><strong>Mascota:</strong> {{ reporte.nombre_mascota }}</p>
@@ -168,7 +319,7 @@
                         </div>
                         {% endfor %}
                     </div>
-
+            
                     <!-- Controles del carrusel -->
                     <button class="carousel-control-prev" type="button" data-bs-target="#reportesCarousel" data-bs-slide="prev" style="background: none; border: none;">
                         <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: black; border-radius: 50%; width: 20px; height: 20px;"></span>
@@ -179,14 +330,14 @@
                         <span class="visually-hidden">Siguiente</span>
                     </button>
                 </div>
-
+            
                 <!-- Botón para Registrar Nuevo Reporte -->
                 <div class="text-center mt-4">
                     <a href="{% url 'home' %}" class="btn btn-primary">
                         Registrar Nuevo Reporte
                     </a>
                 </div>
-            </div>
+            </div>            
             <!-- Recuadro de Consejos de Cuidado -->
             <div class="card mt-4" style="border-radius: 15px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
                 <div class="card-body">
@@ -279,50 +430,53 @@
                 </div>
                 <!-- Información del perfil -->
                 <h4 class="text-center" style="color: #333; font-weight: bold;">{{ usuario.nombre }}</h4>
+                <div class="card-divider"></div> <!-- Franja separadora -->
                 <p style="font-size: 16px; color: #555; margin: 5px 0;">
                     <strong>Correo:</strong> {{ usuario.correo }}
                 </p>
+                <div class="card-divider"></div> <!-- Franja separadora -->
                 <p style="font-size: 16px; color: #555; margin: 5px 0;">
                     <strong>Teléfono:</strong> {{ usuario.telefono }}
                 </p>
+                <div class="card-divider"></div> <!-- Franja separadora -->
                 <!-- Botón para editar perfil -->
                 <div class="text-center mt-3">
-                    <a href="{% url 'editar_perfil' %}" class="btn btn-primary" style="background-color: #ff9100; border: none; border-radius: 30px; padding: 10px 20px; font-size: 14px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+                    <a href="{% url 'editar_perfil' %}" class="btn-edit-profile">
                         Editar perfil
                     </a>
                 </div>
             </div>
             <!-- Formulario para Registrar Mascota -->
-            <div class="card mt-5 p-4" style="width: 100%; max-width: none; margin: 20px 0; padding: 30px; background-color: #ffffff; border-radius: 15px; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);">
-                <h3 style="text-align: center; font-size: 24px; color: #FF6A00; font-weight: bold;">Registrar Nueva Mascota</h3>
+            <div class="card mt-5">
+                <h3>Registrar Nueva Mascota</h3>
                 <form method="POST" enctype="multipart/form-data" action="{% url 'registrar_mascota' %}">
                     {% csrf_token %}
                     <div class="image-upload text-center mb-4">
                         <div class="image-preview default-image" id="imagePreview"></div>
                         <label for="imagen" class="btn btn-upload mt-3">Subir Imagen</label>
                         <input type="file" id="imagen" name="imagen" accept="image/*" onchange="previewImage(event)" style="display: none;">
-                    </div> 
-                    <div class="mb-3">
-                        <label for="nombre" class="form-label" style="font-weight: bold; color: #333;">Nombre</label>
-                        <input type="text" id="nombre" name="nombre" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
                     </div>
                     <div class="mb-3">
-                        <label for="raza" class="form-label" style="font-weight: bold; color: #333;">Raza</label>
-                        <input type="text" id="raza" name="raza" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                        <label for="nombre" class="form-label" style="font-weight: bold; color: var(--text-primary);">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="color" class="form-label" style="font-weight: bold; color: #333;">Color</label>
-                        <input type="text" id="color" name="color" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                        <label for="raza" class="form-label" style="font-weight: bold; color: var(--text-primary);">Raza</label>
+                        <input type="text" id="raza" name="raza" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edad" class="form-label" style="font-weight: bold; color: #333;">Edad</label>
-                        <input type="number" id="edad" name="edad" class="form-control" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+                        <label for="color" class="form-label" style="font-weight: bold; color: var(--text-primary);">Color</label>
+                        <input type="text" id="color" name="color" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="descripcion" class="form-label" style="font-weight: bold; color: #333;">Descripción</label>
-                        <textarea id="descripcion" name="descripcion" class="form-control" rows="3" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
+                        <label for="edad" class="form-label" style="font-weight: bold; color: var(--text-primary);">Edad</label>
+                        <input type="number" id="edad" name="edad" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn btn-success w-100" style="background-color: #FF6A00; border: none; border-radius: 10px; padding: 12px; color: #fff; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">Registrar Mascota</button>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label" style="font-weight: bold; color: var(--text-primary);">Descripción</label>
+                        <textarea id="descripcion" name="descripcion" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Registrar Mascota</button>
                 </form>
             </div>
         </aside>
