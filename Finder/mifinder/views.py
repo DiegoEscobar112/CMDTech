@@ -214,18 +214,32 @@ def perfil(request):
         'reportes': reportes
     })
 
+@csrf_exempt
 def actualizar_imagen_perfil(request):
     if request.method == 'POST':
+        # Obtener el ID del usuario desde la sesión o el cuerpo de la solicitud
+        user_id = request.POST.get('id_usuario') or request.session.get('user_id')
         imagen_perfil = request.FILES.get('imagen_perfil')
-        user_id = request.session.get('user_id')
 
-        if imagen_perfil:
-            # Guardar el archivo de imagen en el sistema de archivos
-            fs = FileSystemStorage()
+        # Log para depurar
+        print(f"Datos recibidos: user_id={user_id}, imagen_perfil={imagen_perfil}")
+
+        # Validar que se tengan los datos requeridos
+        if not user_id or not imagen_perfil:
+            if 'id_usuario' in request.POST:
+                # Responder con JSON si es una solicitud desde la app móvil
+                return JsonResponse({'success': False, 'message': 'ID de usuario e imagen son obligatorios.'}, status=400)
+            else:
+                # Redirigir si es una solicitud desde la web
+                return redirect('mi_perfil')
+
+        try:
+            # Guardar el archivo de imagen
+            fs = FileSystemStorage(location=settings.MEDIA_ROOT)
             filename = fs.save(imagen_perfil.name, imagen_perfil)
             file_url = fs.url(filename)
 
-            # Actualizar la base de datos con la ruta de la imagen
+            # Actualizar la base de datos
             with connection.cursor() as cursor:
                 cursor.execute("""
                     UPDATE usuario
@@ -233,9 +247,29 @@ def actualizar_imagen_perfil(request):
                     WHERE id_usuario = %s
                 """, [file_url, user_id])
 
-        return redirect('mi_perfil')
+            # Respuesta exitosa para la app móvil
+            if 'id_usuario' in request.POST:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Imagen de perfil actualizada con éxito.',
+                    'image_url': file_url,
+                })
+            else:
+                # Redirigir para solicitudes desde la web
+                return redirect('mi_perfil')
 
-    return redirect('mi_perfil')
+        except Exception as e:
+            print('Error al guardar la imagen:', e)
+            if 'id_usuario' in request.POST:
+                return JsonResponse({'success': False, 'message': 'Error al guardar la imagen.'}, status=500)
+            else:
+                return redirect('mi_perfil')
+
+    # Respuesta para métodos no permitidos
+    if 'id_usuario' in request.POST:
+        return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
+    else:
+        return redirect('mi_perfil')
 
 
     
@@ -344,17 +378,27 @@ def registrar_mascota(request):
 @csrf_exempt
 def report_pet(request):
     if request.method == 'POST':
-        description = request.POST.get('description')
-        report_date = request.POST.get('reportDate')
-        location = request.POST.get('location')
-        photo = request.FILES.get('photo')
-        id_mascota = request.POST.get('id_mascota')  # Obtener el ID de la mascota seleccionada
+        print("Datos recibidos en el servidor:", request.POST)
+        print("Archivos recibidos:", request.FILES)
+        # Obtener datos comunes
+        descripcion = request.POST.get('descripcion') or request.POST.get('description')  # Compatibilidad web/móvil
+        report_date = request.POST.get('fecha_publicacion') or request.POST.get('reportDate')
+        location = request.POST.get('ubicacion') or request.POST.get('location')
+        photo = request.FILES.get('imagen') or request.FILES.get('photo')  # Compatibilidad para foto
+        id_mascota = request.POST.get('id_mascota') or request.POST.get('petId')
+
+        # Validar datos obligatorios
+        if not all([descripcion, report_date, location, id_mascota]):
+            return JsonResponse({'success': False, 'error': 'Faltan datos obligatorios.'}, status=400)
 
         try:
-            # Procesar la latitud y longitud
-            lat, lng = location.replace('Lat: ', '').replace('Lng: ', '').split(', ')
-            
-            # Guardar la geolocalización y obtener el id
+            # Procesar ubicación (latitud y longitud)
+            if 'Lat: ' in location and 'Lng: ' in location:
+                lat, lng = location.replace('Lat: ', '').replace('Lng: ', '').split(', ')
+            else:
+                lat, lng = location.split(',')
+
+            # Guardar la geolocalización
             with connection.cursor() as cursor:
                 cursor.execute(
                     "INSERT INTO geolocalizacion (latitud, longitud) VALUES (%s, %s) RETURNING id_geolocalizacion",
@@ -362,40 +406,38 @@ def report_pet(request):
                 )
                 id_geolocalizacion = cursor.fetchone()[0]
 
-            # Guardar el archivo de imagen (si está presente)
+            # Guardar la imagen en el directorio /media/
+            photo_url = None
             if photo:
-                fs = FileSystemStorage()
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT)
                 filename = fs.save(photo.name, photo)
-                photo_url = fs.url(filename)
-            else:
-                photo_url = None  # O una URL por defecto si no se sube imagen
+                photo_url = fs.url(filename)  # Generar URL accesible
 
-            # Guardar el reporte de la mascota
+            # Guardar el reporte de la mascota perdida
             with connection.cursor() as cursor:
                 cursor.execute("""
                     INSERT INTO publicacion (
-                        id_usuario, titulo, descripcion, fecha_publicacion, 
+                        id_usuario, titulo, descripcion, fecha_publicacion,
                         id_mascota, id_geolocalizacion, imagen, estado
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, [
-                    request.session.get('user_id'),
+                    request.session.get('user_id') or request.POST.get('id_usuario'),
                     'Reporte de mascota perdida',
-                    description,
+                    descripcion,
                     report_date,
                     id_mascota,
                     id_geolocalizacion,
-                    photo_url,  # Guardar la URL de la imagen
+                    photo_url,
                     'activa'
                 ])
 
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'message': 'Reporte creado exitosamente.'})
 
         except Exception as e:
-            # Imprimir el error para debug
             print(f'Error al guardar el reporte: {e}')
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'}, status=405)
 
 
 def obtener_reportes(request):
@@ -463,98 +505,108 @@ def calcular_similitud_resnet(imagen1_path, imagen2_path):
 @csrf_exempt
 def crear_comentario(request):
     if request.method == 'POST':
-        contenido = request.POST.get('contenido')
-        id_publicacion = request.POST.get('id_publicacion')
-        id_usuario = request.session.get('user_id')
-        imagen = request.FILES.get('imagen')
+        print("Solicitud POST recibida en /crear-comentario/")
+        print("Datos POST:", request.POST)
+        print("Archivos:", request.FILES)
 
-        if not id_usuario:
-            return JsonResponse({'mensaje': 'Debe iniciar sesión para comentar'}, status=403)
+        try:
+            contenido = request.POST.get('contenido')
+            id_publicacion = request.POST.get('id_publicacion')
+            id_usuario = request.POST.get('id_usuario') or request.session.get('user_id')  # Compatibilidad web/móvil
+            imagen = request.FILES.get('imagen')
 
-        if not id_publicacion:
-            return JsonResponse({'mensaje': 'ID de publicación no encontrado'}, status=400)
+            # Validar datos obligatorios
+            if not contenido or not id_publicacion or not id_usuario:
+                print(f"Faltan datos: contenido={contenido}, id_publicacion={id_publicacion}, id_usuario={id_usuario}")
+                return JsonResponse({'success': False, 'mensaje': 'Faltan datos obligatorios.'}, status=400)
 
-        imagen_url = None
-        similitud_suficiente = False
-        similitud = 0
+            imagen_url = None
+            similitud_suficiente = False
+            similitud = 0
 
-        if imagen:
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'comentarios'))
-            filename = fs.save(imagen.name, imagen)
-            imagen_url = '/media/comentarios/' + filename
+            # Guardar la imagen si se proporciona
+            if imagen:
+                fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'comentarios'))
+                filename = fs.save(imagen.name, imagen)
+                imagen_url = f'/media/comentarios/{filename}'
 
-            # Obtener la imagen del reporte para comparar
+                # Comparar similitud con la imagen del reporte
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT imagen FROM publicacion WHERE id_publicacion = %s", [id_publicacion])
+                    publicacion = cursor.fetchone()
+
+                if publicacion and publicacion[0]:
+                    ruta_imagen_reporte = os.path.join(settings.BASE_DIR, publicacion[0].replace('/media/', 'media/'))
+                    ruta_imagen_comentario = os.path.join(settings.MEDIA_ROOT, 'comentarios', filename)
+
+                    # Calcular la similitud usando ResNet con augmentación
+                    similitud = calcular_similitud_resnet(ruta_imagen_reporte, ruta_imagen_comentario)
+                    similitud_suficiente = similitud >= 75  # Cambiado a 75%
+                    print(f"Similitud suficiente: {similitud_suficiente} con {similitud:.2f}% de similitud")
+
+            # Guardar el comentario en la base de datos
             with connection.cursor() as cursor:
-                cursor.execute("SELECT imagen FROM publicacion WHERE id_publicacion = %s", [id_publicacion])
-                publicacion = cursor.fetchone()
+                cursor.execute("""
+                    INSERT INTO comentario (id_publicacion, id_usuario, contenido, fecha_comentario, imagen)
+                    VALUES (%s, %s, %s, NOW(), %s)
+                """, [id_publicacion, id_usuario, contenido, imagen_url])
 
-            if publicacion and publicacion[0]:
-                ruta_imagen_reporte = os.path.join(settings.BASE_DIR, publicacion[0].replace('/media/', 'media/'))
-                ruta_imagen_comentario = os.path.join(settings.MEDIA_ROOT, 'comentarios', filename)
+            # Crear una notificación si la similitud es suficiente o si hay un nuevo comentario
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT id_usuario FROM publicacion WHERE id_publicacion = %s", [id_publicacion])
+                owner_id = cursor.fetchone()[0]
 
-                # Calcular la similitud usando ResNet con augmentación
-                similitud = calcular_similitud_resnet(ruta_imagen_reporte, ruta_imagen_comentario)
-                similitud_suficiente = similitud >= 75  # Cambiado a 75%
-                print(f"Similitud suficiente: {similitud_suficiente} con {similitud:.2f}% de similitud")
+            if owner_id and id_usuario != owner_id:
+                if similitud_suficiente:
+                    crear_notificacion(
+                        owner_id,
+                        f"Se ha encontrado una mascota con un {similitud:.2f}% de similitud.",
+                        id_publicacion=id_publicacion
+                    )
+                    print("Notificación de imagen similar creada.")
+                else:
+                    crear_notificacion(
+                        owner_id,
+                        "Nuevo comentario en tu publicación.",
+                        id_publicacion=id_publicacion
+                    )
+                    print("Notificación de nuevo comentario creada.")
 
-        # Guardar el comentario en la base de datos
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO comentario (id_publicacion, id_usuario, contenido, fecha_comentario, imagen)
-                VALUES (%s, %s, %s, NOW(), %s)
-            """, [id_publicacion, id_usuario, contenido, imagen_url])
+            return JsonResponse({'success': True, 'mensaje': 'Comentario añadido correctamente.'})
+        except Exception as e:
+            print(f"Error al crear comentario: {e}")
+            return JsonResponse({'success': False, 'mensaje': 'Error al añadir comentario.'}, status=500)
 
-        # Crear una notificación si la similitud es suficiente
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT id_usuario FROM publicacion WHERE id_publicacion = %s", [id_publicacion])
-            owner_id = cursor.fetchone()[0]
-
-        if owner_id and id_usuario != owner_id:
-            if similitud_suficiente:
-                crear_notificacion(
-                    owner_id,
-                    f"Se ha encontrado una mascota con un {similitud:.2f}% de similitud.",
-                    id_publicacion=id_publicacion
-                )
-                print("Notificación de imagen similar creada.")
-            else:
-                crear_notificacion(
-                    owner_id,
-                    "Nuevo comentario en tu publicación.",
-                    id_publicacion=id_publicacion
-                )
-                print("Notificación de nuevo comentario creada.")
-
-        return JsonResponse({'mensaje': 'Comentario añadido correctamente'})
-
-    return JsonResponse({'mensaje': 'Método no permitido'}, status=405)
+    return JsonResponse({'success': False, 'mensaje': 'Método no permitido.'}, status=405)
 
 
 
 def obtener_comentarios(request, report_id):
-    # Supongamos que tienes un modelo o una consulta para obtener los comentarios
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT c.contenido, c.imagen, c.fecha_comentario, u.nombre AS usuario
-            FROM comentario c
-            JOIN usuario u ON c.id_usuario = u.id_usuario
-            WHERE c.id_publicacion = %s
-            ORDER BY c.fecha_comentario DESC
-        """, [report_id])
-        comentarios = cursor.fetchall()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT c.contenido, c.imagen, c.fecha_comentario, u.nombre AS usuario
+                FROM comentario c
+                JOIN usuario u ON c.id_usuario = u.id_usuario
+                WHERE c.id_publicacion = %s
+                ORDER BY c.fecha_comentario DESC
+            """, [report_id])
+            comentarios = cursor.fetchall()
 
-    # Formatear los resultados en un diccionario para JSON
-    comentarios_json = [
-        {
-            'contenido': comentario[0],
-            'imagen': comentario[1],
-            'fecha': comentario[2].strftime("%Y-%m-%d %H:%M:%S"),
-            'usuario': comentario[3],
-        }
-        for comentario in comentarios
-    ]
+        comentarios_json = [
+            {
+                'contenido': comentario[0],
+                'imagen': comentario[1],
+                'fecha': comentario[2].strftime("%Y-%m-%d %H:%M:%S"),
+                'usuario': comentario[3],
+            }
+            for comentario in comentarios
+        ]
 
-    return JsonResponse(comentarios_json, safe=False)
+        return JsonResponse(comentarios_json, safe=False)
+    except Exception as e:
+        print(f"Error al obtener comentarios: {e}")
+        return JsonResponse({'success': False, 'mensaje': 'Error al obtener comentarios.'}, status=500)
 
 def crear_notificacion(user_id, mensaje, estado='no leída', id_publicacion=None):
     """Crea una notificación en la base de datos."""
@@ -573,7 +625,7 @@ def ver_notificaciones(request):
 
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT mensaje, fecha_notificacion, estado, id_publicacion
+            SELECT id_notificacion, mensaje, fecha_notificacion, estado, id_publicacion
             FROM notificacion
             WHERE id_usuario = %s
             ORDER BY fecha_notificacion DESC
@@ -582,10 +634,11 @@ def ver_notificaciones(request):
 
     notificaciones = [
         {
-            'message': n[0],
-            'created_at': n[1].strftime("%Y-%m-%d %H:%M:%S"),
-            'estado': n[2],
-            'reporte_id': n[3]
+            'id': n[0],
+            'message': n[1],
+            'created_at': n[2].strftime("%Y-%m-%d %H:%M:%S"),
+            'estado': n[3],
+            'reporte_id': n[4]
         }
         for n in notificaciones_raw
     ]
@@ -602,7 +655,72 @@ def marcar_notificacion_leida(request, id):
         cursor.execute("""
             UPDATE notificacion 
             SET estado = 'leída' 
-            WHERE id_publicacion = %s AND id_usuario = %s
+            WHERE id_notificacion = %s AND id_usuario = %s
         """, [id, user_id])
     
     return JsonResponse({'success': True})
+
+
+
+#APP MOVIL
+
+@csrf_exempt
+def obtener_mascotas_usuario(request):
+    if request.method == 'GET':
+        user_id = request.GET.get('user_id')
+
+        if not user_id:
+            return JsonResponse({'success': False, 'message': 'ID de usuario es requerido.'}, status=400)
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT id_mascota, nombre FROM mascota WHERE id_usuario = %s", [user_id])
+            mascotas = cursor.fetchall()
+
+        mascotas_data = [{'id_mascota': m[0], 'nombre': m[1]} for m in mascotas]
+        return JsonResponse({'success': True, 'mascotas': mascotas_data})
+
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
+
+
+@csrf_exempt
+def obtener_reportes_usuario(request):
+    if request.method == 'GET':
+        user_id = request.GET.get('user_id')
+
+        if not user_id:
+            return JsonResponse({'success': False, 'message': 'ID de usuario es requerido.'}, status=400)
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion, 
+                           m.nombre AS nombre_mascota, g.latitud, g.longitud, p.imagen
+                    FROM publicacion p
+                    JOIN mascota m ON p.id_mascota = m.id_mascota
+                    JOIN geolocalizacion g ON p.id_geolocalizacion = g.id_geolocalizacion
+                    WHERE p.id_usuario = %s
+                """, [user_id])
+                reportes = cursor.fetchall()
+
+            # Formatear los resultados en un diccionario
+            reportes_json = [
+                {
+                    'id': r[0],
+                    'title': r[1],
+                    'description': r[2],
+                    'date': r[3].strftime('%Y-%m-%d %H:%M:%S'),
+                    'petName': r[4],
+                    'latitude': float(r[5]),
+                    'longitude': float(r[6]),
+                    'image': r[7] if r[7] else '/media/default.jpg'  # Imagen por defecto
+                }
+                for r in reportes
+            ]
+
+            return JsonResponse({'success': True, 'reports': reportes_json}, safe=False)
+
+        except Exception as e:
+            print(f"Error al obtener reportes del usuario: {e}")
+            return JsonResponse({'success': False, 'message': 'Error al obtener reportes.'}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)

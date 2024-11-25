@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mifinder',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Nuevo: Middleware para CORS
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -50,6 +52,33 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# Configuración de CORS para permitir solicitudes desde la aplicación móvil
+CORS_ALLOW_ALL_ORIGINS = False  # Cambia a True si deseas permitir cualquier origen
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8100',  # Dirección de tu aplicación móvil
+]
+
+# Si estás manejando cookies o credenciales
+CORS_ALLOW_CREDENTIALS = True
+
+# Opcional: Permitir métodos específicos si es necesario
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
+
+# Opcional: Configuración para permitir encabezados personalizados
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 ROOT_URLCONF = 'Finder.urls'

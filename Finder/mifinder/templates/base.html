@@ -192,6 +192,11 @@
         background-color: var(--secondary-color); /* Azul suave */
         color: var(--neutral-color); /* Beige claro */
     }
+    .list-group-item.leida {
+        background-color: #f0f0f0; /* Color para notificaciones leídas */
+        color: #888; /* Texto gris */
+    }
+
 </style>
 
 
@@ -276,17 +281,17 @@
                 .then(data => {
                     const listaNotificaciones = document.getElementById('listaNotificaciones');
                     listaNotificaciones.innerHTML = '';
-    
+
                     if (data.length === 0) {
                         listaNotificaciones.innerHTML = '<li class="list-group-item text-center">No tienes notificaciones.</li>';
                         return;
                     }
-    
+
                     data.forEach(notificacion => {
                         const li = document.createElement('li');
                         li.className = `list-group-item ${notificacion.estado === 'leída' ? 'leida' : ''}`;
                         li.innerHTML = `
-                            <a href="/home/?reporte_id=${notificacion.reporte_id}">
+                            <a href="/home/?reporte_id=${notificacion.reporte_id}" onclick="marcarNotificacionLeida(${notificacion.id})">
                                 <div>
                                     <p class="message">${notificacion.message}</p>
                                     <span class="timestamp">${notificacion.created_at}</span>
@@ -298,7 +303,7 @@
                 })
                 .catch(error => console.error('Error al cargar las notificaciones:', error));
         }
-    
+
         function marcarNotificacionLeida(id) {
             fetch(`/marcar_notificacion_leida/${id}/`, {
                 method: 'POST',
@@ -310,25 +315,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        cargarNotificaciones(); // Recargar la lista de notificaciones
+                        console.log(`Notificación ${id} marcada como leída.`);
                     }
                 })
                 .catch(error => console.error('Error al marcar notificación como leída:', error));
-        }
-    
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
         }
     </script>
     {% block extra_scripts %}{% endblock %}
